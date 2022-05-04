@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "graph.h"
+#include "outputJson.h"
 #include <filesystem>
 void divideGraph(){
     string linkName = "./Link.csv";
