@@ -8,6 +8,7 @@
 #include <tuple>
 #include <assert.h>
 #include <set>
+#include <json/json.h>
 using namespace std;
 #define DEBUG printf("%s:%d\n", __FILE__, __LINE__);
 
@@ -244,5 +245,47 @@ linkReader(const string& fileName){
     DEBUG
     cout << relations << endl;
     return result;
+}
+[[nodiscard]]string graphToJson(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes){
+    // string relation; ItemType from, to;
+    map<Hash, uint32_t> raw_to_mapped;
+    Json::Value root_json = Json::ValueType::objectValue;
+    Json::Value categories_json = Json::ValueType::arrayValue;
+    Json::Value nodes_json = Json::ValueType::arrayValue;
+    Json::Value links_json = Json::ValueType::arrayValue;
+    uint32_t count = 0;
+    for(auto iter = nodes.cbegin(); iter != nodes.cend(); iter++){
+        const Hash h = iter->first;
+        raw_to_mapped[h] = count;
+        Json::Value node_json;
+        node_json["name"] = to_string(count);
+        node_json["value"] = 1;
+        node_json["category"] = 0;
+        nodes_json.append(move(node_json));
+        count++;
+    }
+    for(const LinkItemType& link: links){
+        const auto& [relation, from, to] = link;
+        uint32_t from_id = raw_to_mapped[get<1>(link)];
+        uint32_t to_id = raw_to_mapped[get<2>(link)];
+        Json::Value link_json = Json::ValueType::objectValue;
+        link_json["source"] = from_id;
+        link_json["target"] = to_id;
+        links_json.append(move(link_json));
+    }
+    {
+        Json::Value cat01 = Json::ValueType::objectValue;
+        Json::Value empty = Json::ValueType::objectValue;
+        cat01["name"] = "subgraph01";
+        cat01["keyword"] = empty;
+        cat01["base"] = "graph";
+        categories_json.append(cat01);
+    }
+    root_json["type"] = "force";
+    root_json["categories"] = move(categories_json);
+    root_json["nodes"] = move(nodes_json);
+    root_json["links"] = move(links_json);
+    Json::StreamWriterBuilder builder;
+    return Json::writeString(builder, root_json);
 }
 #endif

@@ -9,6 +9,7 @@
 #include <array>
 #include <sstream>
 #include <iomanip>
+#include <json/json.h>
 using namespace std;
 array<int, 100> edgeWeightCount = {};
 void print_edgeWeightCount(){
