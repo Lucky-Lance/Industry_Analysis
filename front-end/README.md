@@ -1,8 +1,8 @@
 # 前端安装与启动
 
 ### 环境配置
-- 安装node.js和vue-cli
-- 使用npm安装yarn
+- 安装`node.js`和`vue-cli`
+- 使用`npm`安装`yarn`
   ```bash
   npm install -g yarn
   ```
