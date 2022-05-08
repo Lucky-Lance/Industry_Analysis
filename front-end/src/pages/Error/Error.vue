@@ -21,7 +21,7 @@
         </b-form>
       </div>
       <footer class="pageFooter">
-        Light Blue Vue Admin Dashboard Template - Made by <a href="https://flatlogic.com" target="_blank">Flatlogic</a>
+        ChinaVis2022 数据可视化竞赛参赛作品，由陆徐东，陈文迪，方天宬和陈文浩共同制作。
       </footer>
     </b-container>
   </div>

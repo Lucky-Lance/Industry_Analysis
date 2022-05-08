@@ -3,17 +3,14 @@
   <nav
     :class="{sidebar: true}"
   >
-    <header class="logo">
-      <router-link to="/app">Light <span class="fw-bold">Blue</span></router-link>
-    </header>
-
-    <a class="generator-link navTitle" target="_blank" href="https://flatlogic.com/generator">Generate App</a>
-
+    <!-- <header class="logo">
+      <router-link to="/app/dashboard"><span class="fw-bold">黑灰产网络资产图谱</span> 可视分析系统</router-link>
+    </header> -->
     <ul class="nav">
       <h5 class="navTitle">APP</h5>
       <NavLink
         :activeItem="activeItem"
-        header="Dashboard"
+        header="分析面板"
         link="/app/dashboard"
         iconName="flaticon-home-3"
         index="dashboard"

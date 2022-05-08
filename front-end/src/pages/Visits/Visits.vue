@@ -1,6 +1,6 @@
 <template>
   <div class="visits-page">
-    <h1 class="page-title">Dashboard &nbsp;
+    <h1 class="page-title">主分析面板 &nbsp;
       <small>
         <small>The Lucky One</small>
       </small>

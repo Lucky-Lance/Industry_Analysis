@@ -1,16 +1,18 @@
 <template>
-<div :class="{root: true, sidebarClose}">
-  <Helper />
+<div>
   <Header />
-  <Sidebar />
-  <div ref="content" class="content animated fadeInUp">
-    <transition name="router-animation">
-      <router-view />
-    </transition>
+  <div :class="{root: true, sidebarClose}">
+    <!-- <Helper /> -->
+    <Sidebar />
+    <div ref="content" class="content animated fadeInUp">
+      <transition name="router-animation">
+        <router-view />
+      </transition>
+    </div>
+    <footer class="contentFooter">
+      ChinaVis2022 数据可视化竞赛参赛作品，由陆徐东，陈文迪，方天宬和陈文浩共同制作。
+    </footer>
   </div>
-  <footer class="contentFooter">
-    Light Blue Vue Admin Dashboard Template - Made by <a href="https://flatlogic.com" target="_blank">Flatlogic</a>
-  </footer>
 </div>
 </template>
 
