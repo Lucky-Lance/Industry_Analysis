@@ -1,21 +1,35 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from './components/HelloWorld.vue'
+import * as vNG from "v-network-graph"
+import data from "./data"
+
+const paths: vNG.Paths = {
+    path1: { edges: ["edge1", "edge3", "edge5", "edge7"] },
+    path2: { edges: ["edge2", "edge4", "edge6", "edge10"] },
+}
+
+const configs = vNG.defineConfigs({
+    node: {
+        normal: { type: "circle", radius: 20, color: "#99ccff" },
+        hover: { color: "#88bbff" },
+        label: { visible: false, fontSize: 8 },
+    },
+    edge: {
+        gap: 12,
+        normal: { color: "#6699cc" },
+    },
+    path: {
+        visible: true,
+        normal: {
+            width: 10,
+            dasharray: "10 16",
+            animate: true,
+            animationSpeed: 40,
+        },
+    },
+})
 </script>
 
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+    <v-network-graph :nodes="data.nodes" :edges="data.edges" :layouts="data.layouts" :paths="paths"
+        :configs="configs" />
 </template>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
