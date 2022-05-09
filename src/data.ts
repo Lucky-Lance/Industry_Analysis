@@ -1,16 +1,16 @@
 import { Nodes, Edges, Layouts } from "v-network-graph"
 
 const nodes: Nodes = {
-    node1: { name: "Node 1" },
-    node2: { name: "Node 2" },
-    node3: { name: "Node 3" },
-    node4: { name: "Node 4" },
-    node5: { name: "Node 5" },
-    node6: { name: "Node 6" },
-    node7: { name: "Node 7" },
-    node8: { name: "Node 8" },
-    node9: { name: "Node 9" },
-    node10: { name: "Node 10" },
+    node1: { name: "N1", icon: "&#xe320" /* Laptop Mac */ },
+    node2: { name: "N2", icon: "&#xe328" /* Router */ },
+    node3: { name: "N3", icon: "&#xe331" /* Tablet Mac */ },
+    node4: { name: "N4", icon: "&#xe2bd" /* Cloud */ },
+    node5: { name: "N5", icon: "&#xf0e2" /* Support Agent */ },
+    node6: { name: "N6", icon: "&#xea75" /* Video Settings */ },
+    node7: { name: "Node 7", icon: "&#xe2bd" /* Cloud */ },
+    node8: { name: "Node 8", icon: "&#xe2bd" /* Cloud */ },
+    node9: { name: "Node 9", icon: "&#xe2bd" /* Cloud */ },
+    node10: { name: "Node 10", icon: "&#xe2bd" /* Cloud */ },
 }
 
 const edges: Edges = {
