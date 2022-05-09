@@ -14,16 +14,16 @@ const nodes: Nodes = {
 }
 
 const edges: Edges = {
-    edge1: { source: "node1", target: "node2" },
-    edge2: { source: "node3", target: "node2" },
-    edge3: { source: "node2", target: "node4" },
-    edge4: { source: "node2", target: "node4" },
-    edge5: { source: "node4", target: "node5" },
-    edge6: { source: "node4", target: "node6" },
-    edge7: { source: "node5", target: "node7" },
-    edge8: { source: "node5", target: "node8" },
-    edge9: { source: "node6", target: "node9" },
-    edge10: { source: "node6", target: "node10" },
+    edge1: { source: "node1", target: "node2", label: "1-2" },
+    edge2: { source: "node3", target: "node2", label: "3-2" },
+    edge3: { source: "node2", target: "node4", label: "2-4" },
+    edge4: { source: "node2", target: "node4", label: "2-4" },
+    edge5: { source: "node4", target: "node5", label: "4-5" },
+    edge6: { source: "node4", target: "node6", label: "4-6" },
+    edge7: { source: "node5", target: "node7", label: "5-7" },
+    edge8: { source: "node5", target: "node8", label: "5-8" },
+    edge9: { source: "node6", target: "node9", label: "6-9" },
+    edge10: { source: "node6", target: "node10", label: "6-10" },
 }
 
 const layouts: Layouts = {
