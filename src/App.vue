@@ -9,12 +9,12 @@ import {
 } from "v-network-graph/lib/force-layout"
 
 const paths: vNG.Paths = reactive({
-    path1: { edges: ["edge1", "edge3", "edge5", "edge7"], width: 0 },
-    path2: { edges: ["edge2", "edge4", "edge6", "edge10"], width: 0 },
+    path1: { edges: ["edge61", "edge81", "edge24", "edge3"], width: 0 },
+    // path2: { edges: ["edge2", "edge4", "edge6", "edge10"], width: 0 },
 })
 const pathNodes = [
-    new Set(["node1", "node2", "node4", "node5", "node7"]),
-    new Set(["node3", "node2", "node4", "node6", "node10"]),
+    new Set(["node36", "node18", "node34", "node25", "node41"]),
+    // new Set(["node3", "node2", "node4", "node6", "node10"]),
 ]
 
 const selectedNodes = ref<string[]>([])
