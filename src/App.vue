@@ -2,6 +2,11 @@
 import { reactive, ref } from "vue";
 import * as vNG from "v-network-graph"
 import data from "./data"
+import {
+    ForceLayout,
+    ForceNodeDatum,
+    ForceEdgeDatum,
+} from "v-network-graph/lib/force-layout"
 
 const paths: vNG.Paths = {
     path1: { edges: ["edge1", "edge3", "edge5", "edge7"] },
@@ -10,8 +15,31 @@ const paths: vNG.Paths = {
 const selectedNodes = ref<string[]>([])
 
 const configs = vNG.defineConfigs({
-    view: { scalingObjects: true, },
+    view: {
+        scalingObjects: true,
+        layoutHandler: new ForceLayout({
+            positionFixedByDrag: false,
+            positionFixedByClickWithAltKey: true,
+            // * The following are the default parameters for the simulation.
+            // * You can customize it by uncommenting below.
+            // createSimulation: (d3, nodes, edges) => {
+            //   const forceLink = d3.forceLink<ForceNodeDatum, ForceEdgeDatum>(edges).id(d => d.id)
+            //   return d3
+            //     .forceSimulation(nodes)
+            //     .force("edge", forceLink.distance(100))
+            //     .force("charge", d3.forceManyBody())
+            //     .force("collide", d3.forceCollide(50).strength(0.2))
+            //     .force("center", d3.forceCenter().strength(0.05))
+            //     .alphaMin(0.001)
+            // }
+        }),
+    },
     node: {
+        node0: {
+            x: 0,
+            y: 0,
+            fixed: true, // Unaffected by force
+        },
         selectable: true,
         normal: {
             type: "rect",
