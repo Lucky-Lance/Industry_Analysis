@@ -7,10 +7,10 @@ const nodes: Nodes = {
     node4: { name: "N4", icon: "&#xe2bd" /* Cloud */ },
     node5: { name: "N5", icon: "&#xf0e2" /* Support Agent */ },
     node6: { name: "N6", icon: "&#xea75" /* Video Settings */ },
-    node7: { name: "Node 7", icon: "&#xe2bd" /* Cloud */ },
-    node8: { name: "Node 8", icon: "&#xe2bd" /* Cloud */ },
-    node9: { name: "Node 9", icon: "&#xe2bd" /* Cloud */ },
-    node10: { name: "Node 10", icon: "&#xe2bd" /* Cloud */ },
+    node7: { name: "N7", icon: "&#xe2bd" /* Cloud */ },
+    node8: { name: "N8", icon: "&#xe2bd" /* Cloud */ },
+    node9: { name: "N9", icon: "&#xe2bd" /* Cloud */ },
+    node10: { name: "N10", icon: "&#xe2bd" /* Cloud */ },
 }
 
 const edges: Edges = {

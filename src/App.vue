@@ -8,11 +8,30 @@ import {
     ForceEdgeDatum,
 } from "v-network-graph/lib/force-layout"
 
-const paths: vNG.Paths = {
-    path1: { edges: ["edge1", "edge3", "edge5", "edge7"] },
-    path2: { edges: ["edge2", "edge4", "edge6", "edge10"] },
-}
+const paths: vNG.Paths = reactive({
+    path1: { edges: ["edge1", "edge3", "edge5", "edge7"], width: 0 },
+    path2: { edges: ["edge2", "edge4", "edge6", "edge10"], width: 0 },
+})
+const pathNodes = [
+    new Set(["node1", "node2", "node4", "node5", "node7"]),
+    new Set(["node3", "node2", "node4", "node6", "node10"]),
+]
+
 const selectedNodes = ref<string[]>([])
+
+const eventHandlers: vNG.EventHandlers = {
+    "node:click": ({ node }) => {
+        // toggle
+        // console.log(node);
+        for (let i = 0; i < 2; ++i)
+            if (pathNodes[i].has(node)) {
+                let pathName = "path" + (i + 1).toString();
+                console.log(pathName, paths[pathName]);
+                paths[pathName].width = 10 - paths[pathName].width;
+            }
+        // data.nodes[node].active = !data.nodes[node].active
+    },
+}
 
 const configs = vNG.defineConfigs({
     view: {
@@ -92,7 +111,7 @@ const configs = vNG.defineConfigs({
     path: {
         visible: true,
         normal: {
-            width: 10,
+            width: path => path.width,
             dasharray: "10 16",
             animate: true,
             animationSpeed: 40,
@@ -103,7 +122,7 @@ const configs = vNG.defineConfigs({
 
 <template>
     <v-network-graph v-model:selected-nodes="selectedNodes" :nodes="data.nodes" :edges="data.edges"
-        :layouts="data.layouts" :paths="paths" :configs="configs">
+        :layouts="data.layouts" :paths="paths" :configs="configs" :event-handlers="eventHandlers">
 
         <template #edge-label="{ edge, ...slotProps }">
             <v-edge-label :text="edge.label" :font-size="12" fill="#2d6df3" align="center" vertical-align="above"
