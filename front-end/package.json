@@ -33,6 +33,7 @@
     "vue": "^2.6.12",
     "vue-apexcharts": "^1.6.0",
     "vue-chartjs": "^3.5.1",
+    "vue-easytable": "^2.16.3",
     "vue-echarts": "^4.1.0",
     "vue-router": "^3.5.1",
     "vue-toasted": "^1.1.28",

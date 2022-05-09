@@ -10,6 +10,20 @@
     </h1>
     <div>
       <b-row>
+        <b-col xs="12" lg="12">
+          <Widget
+              title="<h5>Example <span class='fw-semi-bold'>Table</span></h5>"
+              close collapse customHeader
+          > 
+
+          <ve-table :columns="columns" 
+            :table-data="tableData" 
+            :max-height="300"
+            :virtual-scroll-option="virtualScrollOption"
+            :border-around="false"/>
+
+          </Widget>
+        </b-col>
         <b-col xs="12" lg="7">
           <Widget
               title="<h5>Apex <span class='fw-semi-bold'>Column Chart</span></h5>"
@@ -122,17 +136,93 @@ exportData(Highcharts);
 import { Chart } from 'highcharts-vue';
 import Sparklines from '../../components/Sparklines/Sparklines'
 
+import "vue-easytable/libs/theme-dark/index.css";
+import { VeTable, VePagination } from "vue-easytable";
+
 export default {
   name: "Charts",
-  components: { Widget, echart: ECharts, highcharts: Chart, Sparklines },
+  components: { Widget, echart: ECharts, highcharts: Chart, Sparklines, VeTable, VePagination},
   data() {
     return {
       cd: chartData,
       ld: liveChart,
       initEchartsOptions: {
         renderer: 'canvas'
-      }
-    };
+      },
+      columns: [
+                    { field: "name", key: "a", title: "Name", align: "center" },
+                    { field: "date", key: "b", title: "Date", align: "left" },
+                    {
+                        field: "hobby",
+                        key: "c",
+                        title: "Hobby",
+                        align: "right",
+                    },
+                    { field: "address", key: "d", title: "Address" },
+                ],
+                tableData: [
+                    {
+                        name: "John",
+                        date: "1900-05-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Shanghai",
+                    },
+                    {
+                        name: "Dickerson",
+                        date: "1910-06-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Beijing",
+                    },
+                    {
+                        name: "Larsen",
+                        date: "2000-07-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Chongqing",
+                    },
+                    {
+                        name: "Geneva",
+                        date: "2010-08-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Xiamen",
+                    },
+                    {
+                        name: "Jami",
+                        date: "2020-09-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Shenzhen",
+                    },
+                    {
+                        name: "John",
+                        date: "1900-05-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Shanghai",
+                    },
+                    {
+                        name: "Dickerson",
+                        date: "1910-06-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Beijing",
+                    },
+                    {
+                        name: "Larsen",
+                        date: "2000-07-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Chongqing",
+                    },
+                    {
+                        name: "Geneva",
+                        date: "2010-08-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Xiamen",
+                    },
+                    {
+                        name: "Jami",
+                        date: "2020-09-20",
+                        hobby: "coding and coding repeat",
+                        address: "No.1 Century Avenue, Shenzhen",
+                    },
+                ],
+    }
   },
   computed: {
     sparklineData() {
