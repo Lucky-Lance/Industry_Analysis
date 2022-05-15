@@ -8,7 +8,8 @@
 #include <tuple>
 #include <assert.h>
 #include <set>
-#include <json/json.h>
+#include <filesystem>
+#include <iomanip>
 using namespace std;
 #define DEBUG printf("%s:%d\n", __FILE__, __LINE__);
 
@@ -233,7 +234,13 @@ linkReader(const string& fileName){
     set<string> relations;
     while(getline(f, line)){
         vector<string> splitedStr = split(line, ',');
-        assert(splitedStr.size() == 3);
+        if(splitedStr.size() != 3){
+            cerr << "Error in parsing " << fileName << endl;
+            cerr << "error read: " << endl;
+            cerr << line << endl;
+            cerr << "error reason: splitedStr.size() != 3" << endl;
+            assert(0);
+        }
         string hashStr1 = get<1>( splitLast(splitedStr[1], '_') );
         string hashStr2 = get<1>( splitLast(splitedStr[2], '_') );
         Hash source(hashStr1);
@@ -246,46 +253,136 @@ linkReader(const string& fileName){
     cout << relations << endl;
     return result;
 }
-[[nodiscard]]string graphToJson(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes){
-    // string relation; ItemType from, to;
-    map<Hash, uint32_t> raw_to_mapped;
-    Json::Value root_json = Json::ValueType::objectValue;
-    Json::Value categories_json = Json::ValueType::arrayValue;
-    Json::Value nodes_json = Json::ValueType::arrayValue;
-    Json::Value links_json = Json::ValueType::arrayValue;
-    uint32_t count = 0;
-    for(auto iter = nodes.cbegin(); iter != nodes.cend(); iter++){
-        const Hash h = iter->first;
-        raw_to_mapped[h] = count;
-        Json::Value node_json;
-        node_json["name"] = to_string(count);
-        node_json["value"] = 1;
-        node_json["category"] = 0;
-        nodes_json.append(move(node_json));
+void outputSubGraph(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems
+                    , const vector<Hash>& subGraph, const tuple<string,string>& fileNames){
+    DEBUG
+    map<Hash, vector<LinkItemType>> links;
+    for(const LinkItemType& linkItem: linkItems){
+        Hash from_hash = get<1>(linkItem);
+        auto pos = links.find(from_hash);
+        if(pos == links.end()){
+            links.emplace(from_hash, vector<LinkItemType>{linkItem});
+        }
+        else{
+            pos->second.emplace_back(linkItem);
+        }
+    }
+
+
+        {// output Node.csv
+            ofstream f;
+            const string& fileName = get<0>(fileNames);
+            f.open(fileName, ios::out);
+            if(!f.good()){
+                cerr << "try to write '" << fileName << "', but failed!\n";
+                exit(1);
+            }
+            f << "id,name,type,industry\n";
+            for(const Hash& h: subGraph){
+                const ItemType& item = nodes.at(h);
+                outputItemType(f, item) << '\n';
+            }
+            f.close();
+        }
+        {
+            ofstream f;
+            const string & fileName = get<1>(fileNames);
+            f.open(fileName, ios::out);
+            if(!f.good()){
+                cerr << "try to write '" << fileName << "', but failed!\n";
+                exit(1);
+            }
+            f << "relation,source,target\n";
+            set<Hash> subNodes;
+            subNodes.insert(subGraph.cbegin(), subGraph.cend());
+            for(const Hash& h: subGraph){
+                auto pos = links.find(h);
+                if(pos == links.cend()){
+                    continue;
+                }
+                const vector<LinkItemType>& l = pos->second;
+                for(const LinkItemType& li: l){
+                    if(subNodes.find(get<2>(li)) == subNodes.cend()){
+                        continue;
+                    }
+                    f << get<0>(li) << ',' << nodes.at(get<1>(li)).id_str << ','
+                      << nodes.at(get<2>(li)).id_str << '\n';
+                }
+            }
+            f.close();
+        }
+}
+void outputSubGraphs(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems, const vector<vector<Hash>>& subGraphs, string folderName){
+    assert(!folderName.empty());
+    if(folderName.back()!='/' || folderName.back() != '\\'){
+        folderName += '/';
+    }
+    auto outputFolder = filesystem::path(folderName);
+    if(!filesystem::is_directory(outputFolder)){
+        if(!filesystem::create_directory(outputFolder)){
+            cerr << "try to mkdir '" << outputFolder << "', but failed!" << endl;
+            exit(1);
+        }
+    }
+    map<Hash, vector<LinkItemType>> links;
+    for(const LinkItemType& linkItem: linkItems){
+        Hash from_hash = get<1>(linkItem);
+        auto pos = links.find(from_hash);
+        if(pos == links.end()){
+            links.emplace(from_hash, vector<LinkItemType>{linkItem});
+        }
+        else{
+            pos->second.emplace_back(linkItem);
+        }
+    }
+    int count = 0;
+    for(const vector<Hash>& subGraph: subGraphs){
+        {// output Node.csv
+            ofstream f;
+            stringstream ss;
+            ss << folderName << setw(8) << setfill('0') << count << "-Node-" << setw(8) << setfill('0') << subGraph.size() <<".csv";
+            f.open(ss.str(), ios::out);
+            if(!f.good()){
+                cerr << "try to write '" << ss.str() << "', but failed!\n";
+                exit(1);
+            }
+            f << "id,name,type,industry\n";
+            for(const Hash& h: subGraph){
+                const ItemType& item = nodes.at(h);
+                outputItemType(f, item) << '\n';
+            }
+            f.close();
+        }
+        {
+            ofstream f;
+            stringstream ss;
+            ss << folderName << setw(8) << setfill('0') << count << "-Link-"
+               << setw(8) << setfill('0') << subGraph.size() <<".csv";
+            f.open(ss.str(), ios::out);
+            if(!f.good()){
+                cerr << "try to write '" << ss.str() << "', but failed!\n";
+                exit(1);
+            }
+            f << "relation,source,target\n";
+            set<Hash> subNodes;
+            subNodes.insert(subGraph.cbegin(), subGraph.cend());
+            for(const Hash& h: subGraph){
+                auto pos = links.find(h);
+                if(pos == links.cend()){
+                    continue;
+                }
+                const vector<LinkItemType>& l = pos->second;
+                for(const LinkItemType& li: l){
+                    if(subNodes.find(get<2>(li)) == subNodes.cend()){
+                        continue;
+                    }
+                    f << get<0>(li) << ',' << nodes.at(get<1>(li)).id_str << ','
+                      << nodes.at(get<2>(li)).id_str << '\n';
+                }
+            }
+            f.close();
+        }
         count++;
     }
-    for(const LinkItemType& link: links){
-        const auto& [relation, from, to] = link;
-        uint32_t from_id = raw_to_mapped[get<1>(link)];
-        uint32_t to_id = raw_to_mapped[get<2>(link)];
-        Json::Value link_json = Json::ValueType::objectValue;
-        link_json["source"] = from_id;
-        link_json["target"] = to_id;
-        links_json.append(move(link_json));
-    }
-    {
-        Json::Value cat01 = Json::ValueType::objectValue;
-        Json::Value empty = Json::ValueType::objectValue;
-        cat01["name"] = "subgraph01";
-        cat01["keyword"] = empty;
-        cat01["base"] = "graph";
-        categories_json.append(cat01);
-    }
-    root_json["type"] = "force";
-    root_json["categories"] = move(categories_json);
-    root_json["nodes"] = move(nodes_json);
-    root_json["links"] = move(links_json);
-    Json::StreamWriterBuilder builder;
-    return Json::writeString(builder, root_json);
 }
 #endif

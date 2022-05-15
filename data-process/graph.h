@@ -11,6 +11,14 @@
 #include <iomanip>
 #include <json/json.h>
 using namespace std;
+const vector<string> nodeVisTypeToStr = {
+        "IMPORTANT_NODE",
+        "MATTER_NODE",
+        "NORMAL_NODE",
+        "INSIGNIFICANT_NODE",
+        "USELESS_NODE",
+        "UNVISITED_NODE"
+};
 array<int, 100> edgeWeightCount = {};
 void print_edgeWeightCount(){
     cout << "x = [";
@@ -41,69 +49,7 @@ struct Edge_Sort{
 		return a.weight < b.weight;
 	}
 };
-void outputSubGraph(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems, const vector<vector<Hash>>& subGraphs){
-    DEBUG
-    map<Hash, vector<LinkItemType>> links;
-    for(const LinkItemType& linkItem: linkItems){
-        Hash from_hash = get<1>(linkItem);
-        auto pos = links.find(from_hash);
-        if(pos == links.end()){
-            links.emplace(from_hash, vector<LinkItemType>{linkItem});
-        }
-        else{
-            pos->second.emplace_back(linkItem);
-        }
-    }
-    int count = 0;
-    for(const vector<Hash>& subGraph: subGraphs){
-        {// output Node.csv
-            ofstream f;
-            stringstream ss;
-            ss << "./output/" << setw(8) << setfill('0') << count << "-Node-" << setw(8) << setfill('0') << subGraph.size() <<".csv";
-            f.open(ss.str(), ios::out);
-            if(!f.good()){
-                cerr << "try to write '" << ss.str() << "', but failed!\n";
-                exit(1);
-            }
-            f << "id,name,type,industry\n";
-            for(const Hash& h: subGraph){
-                const ItemType& item = nodes.at(h);
-                outputItemType(f, item) << '\n';
-            }
-            f.close();
-        }
-        {
-            ofstream f;
-            stringstream ss;
-            ss << "./output/" << setw(8) << setfill('0') << count << "-Link-"
-                << setw(8) << setfill('0') << subGraph.size() <<".csv";
-            f.open(ss.str(), ios::out);
-            if(!f.good()){
-                cerr << "try to write '" << ss.str() << "', but failed!\n";
-                exit(1);
-            }
-            f << "relation,source,target\n";
-            set<Hash> subNodes;
-            subNodes.insert(subGraph.cbegin(), subGraph.cend());
-            for(const Hash& h: subGraph){
-                auto pos = links.find(h);
-                if(pos == links.cend()){
-                    continue;
-                }
-                const vector<LinkItemType>& l = pos->second;
-                for(const LinkItemType& li: l){
-                    if(subNodes.find(get<2>(li)) == subNodes.cend()){
-                        continue;
-                    }
-                    f << get<0>(li) << ',' << nodes.at(get<1>(li)).id_str << ','
-                        << nodes.at(get<2>(li)).id_str << '\n';
-                }
-            }
-            f.close();
-        }
-        count++;
-    }
-}
+
 constexpr const uint32_t UNMATCHED = -1;
 class Graph{
 private:
@@ -111,11 +57,11 @@ private:
     set<Hash> raw_node;// 存放所有结点,存的[结点原始编号]
 	map<Hash, uint32_t> raw_to_mapped;// [结点原始编号] -> [连续化结点编号]
 	map<uint32_t, Hash> mapped_to_raw;// [连续化结点编号] -> [结点原始编号]
-
+    map<uint32_t , vector<char>> mapped_to_black;
 	vector<int> nodeDegreeWeight;
 public:
     Graph(){}
-    [[nodiscard]]size_t numNodes(){
+    [[nodiscard]]size_t numNodes() const {
         return raw_node.size();
     }
     void insert(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes){
@@ -127,6 +73,7 @@ public:
                 uint32_t mapped_id = raw_node.size() - 1U;
                 raw_to_mapped[h] = mapped_id;
                 mapped_to_raw[mapped_id] = h;
+                mapped_to_black[mapped_id] = iter->second.industry;
                 nodeDegreeWeight.emplace_back(0U);
                 assert(nodeDegreeWeight.size() == raw_node.size());
             }
@@ -193,54 +140,121 @@ public:
             return degreeWeight > other.degreeWeight;
         }
 	};
-
-private:
-    vector<bool> _dfsAnalyseVisit;
-    array<vector<NodeDegreeType>, 5> _analyseArrangement;
-    void _dfsAnalyse(uint32_t root, int depth){
-        if(depth >= _analyseArrangement.size() || _dfsAnalyseVisit[root]) return;
-        if(nodeDegreeWeight[root] <= 10) return;
-        if(depth>=3 && nodeDegreeWeight[root] <= 20) return;
-        _dfsAnalyseVisit[root] = true;
-        _analyseArrangement[depth].push_back(NodeDegreeType(root, nodeDegreeWeight[root]));
-        const vector<Edge<Hash>>& rootEdges = edges[mapped_to_raw[root]];
-        for(const auto& edge: rootEdges){
-            uint32_t u = raw_to_mapped[edge.to];
-            _dfsAnalyse(u, depth+1);
-        }
-    }
+    enum NodeVisType{
+        IMPORTANT_NODE = 0,
+        MATTER_NODE = 1,
+        NORMAL_NODE = 2,
+        INSIGNIFICANT_NODE = 3,
+        USELESS_NODE = 4,
+        UNVISITED_NODE = 5,
+    };
 
 public:
-	vector<NodeDegreeType> analyseDegree(){
+    [[nodiscard]]vector<uint32_t> getDepth(uint32_t root) const {
+        vector<uint32_t> result;
+        result.resize(numNodes(), UNMATCHED);
+        queue<uint32_t> bfsQueue;
+        result[root] = 0;
+        bfsQueue.emplace(root);
+        while(!bfsQueue.empty()){
+            uint32_t node = bfsQueue.front();
+            bfsQueue.pop();
+            uint32_t nextDepth = result[node] + 1;
+            const vector<Edge<Hash>>& rootEdges = edges.at(mapped_to_raw.at(node));
+            for(const auto& edge: rootEdges){
+                uint32_t nextNode = raw_to_mapped.at(edge.to);
+                if(result[nextNode] == UNMATCHED){
+                    result[nextNode] = nextDepth;
+                    bfsQueue.emplace(nextNode);
+                }
+            }
+        }
+        return result;
+    }
+    vector<vector<Hash>> bfsAnalyseGraphs() const {
+        vector<NodeVisType> nodeStatus;
         vector<NodeDegreeType> nodeWeights;
         nodeWeights.reserve(numNodes());
-        _dfsAnalyseVisit.clear();
-        _dfsAnalyseVisit.resize(numNodes(), false);
+        nodeStatus.resize(numNodes(), UNVISITED_NODE);
         for(uint32_t id=0; id< nodeDegreeWeight.size(); id++){
             nodeWeights.emplace_back(NodeDegreeType(id, nodeDegreeWeight[id]));
         }
         sort(nodeWeights.begin(), nodeWeights.end(), greater<NodeDegreeType>());
-//        cout << "Analyse all!" << endl;
-//        for(NodeDegreeType n: nodeWeights){
-//            cout << n.degreeWeight << ' ';
-//        }
-//        cout << endl;
-//        return;
+        vector<vector<Hash>> subGraphs;
+        for(const auto& nodeWeight: nodeWeights) {
+            if(nodeWeight.degreeWeight < 800) break;
+            array<vector<uint32_t>, UNVISITED_NODE> nodeTypeRecord;
+            uint32_t root = nodeWeight.mapped_id;
+            if(nodeStatus[root] != UNVISITED_NODE) continue;
+            cout << "Analyse root!" << endl;
 
-        cout << "Analyse root!" << endl;
-        uint32_t root = nodeWeights[0].mapped_id;
-        _dfsAnalyse(root, 0);
-        for(uint32_t depth=0; depth<_analyseArrangement.size(); depth++){
-            cout << "=================================== " << "depth = " << depth << " ===================================" << endl;
-            vector<NodeDegreeType>& arrange = _analyseArrangement[depth];
-            sort(arrange.begin(), arrange.end(), greater<NodeDegreeType>());
-            for(NodeDegreeType n: arrange){
-                cout << n.degreeWeight << ' ';
+            auto depth = getDepth(root);
+            queue<tuple<uint32_t, NodeVisType>> bfsQueue;
+            bfsQueue.emplace(make_tuple(root, IMPORTANT_NODE));
+            while (!bfsQueue.empty()) {
+                auto [nodeID, currentStatus] = bfsQueue.front();
+                bfsQueue.pop();
+                if (nodeStatus[nodeID] != UNVISITED_NODE) continue;
+                if (currentStatus < NORMAL_NODE && nodeDegreeWeight[nodeID] < 50) {
+//                cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down from " << nodeVisTypeToStr[currentStatus] << " to NORMAL!" << endl;
+                    currentStatus = NORMAL_NODE;
+                }
+                if (depth[nodeID] < 4) {
+                    if (currentStatus > MATTER_NODE && nodeDegreeWeight[nodeID] > 800) {
+//                    cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought up to MATTER!" << endl;
+                        currentStatus = MATTER_NODE;
+                    } else if (currentStatus > NORMAL_NODE && nodeDegreeWeight[nodeID] > 300) {
+//                    cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought up to NORMAL!" << endl;
+                        currentStatus = NORMAL_NODE;
+                    }
+                    if (depth[nodeID] >= 2 && nodeDegreeWeight[nodeID] > 800 && currentStatus <= MATTER_NODE) {
+//                    cerr << "WARNING!!" << endl;
+                        currentStatus = USELESS_NODE;
+                    }
+                } else {
+                    if (currentStatus < INSIGNIFICANT_NODE && nodeDegreeWeight[nodeID] < 100) {
+//                    cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down to INSIGNIFICANT!" << endl;
+                        currentStatus = INSIGNIFICANT_NODE;
+                    } else if (nodeDegreeWeight[nodeID] < 50) {
+//                    cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down to USELESS!" << endl;
+                        currentStatus = USELESS_NODE;
+                    }
+                }
+                if (mapped_to_black.at(nodeID).empty() && currentStatus >= NORMAL_NODE) {
+//                cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down to USELESS!" << endl;
+                    currentStatus = USELESS_NODE;
+                }
+                nodeStatus[nodeID] = currentStatus;
+                nodeTypeRecord[(size_t) currentStatus].emplace_back(nodeID);
+
+                NodeVisType nextStatus = static_cast<NodeVisType>(currentStatus + 1);
+                if (nextStatus >= USELESS_NODE) continue;
+                const vector<Edge<Hash>> &rootEdges = edges.at(mapped_to_raw.at(nodeID));
+                for (const auto &edge: rootEdges) {
+                    uint32_t u = raw_to_mapped.at(edge.to);
+                    if (nodeStatus[u] == UNVISITED_NODE) {
+                        bfsQueue.emplace(make_tuple(u, nextStatus));
+                    }
+                }
             }
-            cout << endl;
+            vector<Hash> subGraph;
+            for (uint32_t depth = IMPORTANT_NODE; depth < USELESS_NODE; depth++) {
+                cout << "=================================== " << "depth = " << depth
+                     << " ===================================" << endl;
+                for (auto n: nodeTypeRecord[depth]) {
+                    cout << nodeDegreeWeight[n] << ' ';
+                    subGraph.emplace_back(mapped_to_raw.at(n));
+                }
+                cout << endl;
+            }
+            subGraphs.emplace_back(move(subGraph));
+            for(auto iter=nodeStatus.begin(); iter!=nodeStatus.end();iter++){
+                if(*iter == USELESS_NODE) *iter = UNVISITED_NODE;
+            }
         }
-        return nodeWeights;
-	}
+        return subGraphs;
+    }
+public:
 	[[nodiscard]] vector<vector<Hash>> divideSubGraph(){
 	    int verNum = 0;
         dfsVers.resize(raw_node.size(), UNMATCHED);

@@ -1,7 +1,7 @@
 #include "parser.h"
 #include "graph.h"
+#include "outputAPI.h"
 #include <filesystem>
-#include <json/json.h>
 void divideGraph(){
     string linkName = "./Link.csv";
     string nodeName = "./Node.csv";
@@ -10,7 +10,7 @@ void divideGraph(){
     Graph graph;
     graph.insert(links, nodes);
     vector<vector<Hash>> subGraphs = graph.divideSubGraph();
-    outputSubGraph(nodes, links, subGraphs);
+    outputSubGraphs(nodes, links, subGraphs, "./output/");
 }
 void analyseTheBiggest(){
     string linkName = "/media/ftc/DATA/output/00000055-Link-00172977.csv";
@@ -19,32 +19,37 @@ void analyseTheBiggest(){
     map<Hash, ItemType> nodes  = nodeReader(nodeName);
     Graph graph;
     graph.insert(links, nodes);
-    graph.analyseDegree();
+    vector<vector<Hash>> subGraphs = graph.bfsAnalyseGraphs();
+//    tuple<string, string> names = std::make_tuple(
+//            "/media/ftc/DATA/ftc/第六学期/可视化/作业/大作业/ChinaVis Data Challenge 2022-mini challenge 1-Dataset/data-process/sub01-nodes.csv",
+//            "/media/ftc/DATA/ftc/第六学期/可视化/作业/大作业/ChinaVis Data Challenge 2022-mini challenge 1-Dataset/data-process/sub01-link.csv"
+//            );
+    outputSubGraphs(nodes, links, subGraphs, "./output/");
 }
 void subGraphToJsonForAnalyse(){
-    string linkName = "/media/ftc/DATA/output/00000014-Link-00000044.csv";
-    string nodeName = "/media/ftc/DATA/output/00000014-Node-00000044.csv";
+//    string linkName = "/media/ftc/DATA/output/00000055-Link-00172977.csv";
+//    string nodeName = "/media/ftc/DATA/output/00000055-Node-00172977.csv";
+    string linkName = "/media/ftc/DATA/ftc/第六学期/可视化/作业/大作业/ChinaVis Data Challenge 2022-mini challenge 1-Dataset/data-process/sub01-link.csv";
+    string nodeName = "/media/ftc/DATA/ftc/第六学期/可视化/作业/大作业/ChinaVis Data Challenge 2022-mini challenge 1-Dataset/data-process/sub01-nodes.csv";
     vector<LinkItemType> links = linkReader(linkName);
     map<Hash, ItemType> nodes  = nodeReader(nodeName);
-    ofstream f; f.open("subgraph14.json", ios::out);
-    f << graphToJson(links, nodes) << endl;
+//    ofstream f; f.open("subgraph55.json", ios::out);
+    ofstream f; f.open("/media/ftc/DATA/ftc/第六学期/可视化/作业/大作业/ChinaVis Data Challenge 2022-mini challenge 1-Dataset/data-process/subgraph01.json", ios::out);
+    f << graphToJson_echarts(links, nodes) << endl;
     f.close();
 }
 int main(){
-    auto outputFolder = filesystem::path("/media/ftc/DATA/output/");
-    if(!filesystem::is_directory(outputFolder)){
-        DEBUG
-        if(filesystem::create_directory(outputFolder)){
-            DEBUG
-            divideGraph();
-        }
-        else{
-            cerr << "try to mkdir './output', but failed!" << endl;
-            exit(1);
-        }
-    }
-    DEBUG
-//    analyseTheBiggest();
-    subGraphToJsonForAnalyse();
+//    auto outputFolder = filesystem::path("/media/ftc/DATA/output/");
+//    if(!filesystem::is_directory(outputFolder)){
+//        if(filesystem::create_directory(outputFolder)){
+//            divideGraph();
+//        }
+//        else{
+//            cerr << "try to mkdir '" << outputFolder << "', but failed!" << endl;
+//            exit(1);
+//        }
+//    }
+    analyseTheBiggest();
+//    subGraphToJsonForAnalyse();
     return 0;
 }
