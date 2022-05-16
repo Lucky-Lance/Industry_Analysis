@@ -12,6 +12,9 @@ import router from './Routes';
 import App from './App';
 import layoutMixin from './mixins/layout';
 
+import api from "./interface/index"
+Vue.prototype.$api = api.commonUrl
+
 Vue.use(BootstrapVue);
 Vue.use(VCalendar, {
   firstDayOfWeek: 2
