@@ -49,16 +49,23 @@ struct Edge_Sort{
 		return a.weight < b.weight;
 	}
 };
-
+enum NodeAssetType{
+    DOMAIN_ASS, IP_ASS, CERT_ASS
+};
+const static map<string, NodeAssetType> stringToAssetType = {
+        {"Domain", DOMAIN_ASS}, {}
+};
 constexpr const uint32_t UNMATCHED = -1;
 class Graph{
 private:
+
     map<Hash, vector<Edge<Hash>> > edges;// edge<T> 存的[结点原始编号]
     set<Hash> raw_node;// 存放所有结点,存的[结点原始编号]
 	map<Hash, uint32_t> raw_to_mapped;// [结点原始编号] -> [连续化结点编号]
 	map<uint32_t, Hash> mapped_to_raw;// [连续化结点编号] -> [结点原始编号]
     map<uint32_t , vector<char>> mapped_to_black;
 	vector<int> nodeDegreeWeight;
+    vector<NodeAssetType> mapped_to_assetType;
 public:
     Graph(){}
     [[nodiscard]]size_t numNodes() const {
@@ -74,6 +81,7 @@ public:
                 raw_to_mapped[h] = mapped_id;
                 mapped_to_raw[mapped_id] = h;
                 mapped_to_black[mapped_id] = iter->second.industry;
+                mapped_to_assetType[mapped_id] = stringToAssetType.at(iter->second.type);
                 nodeDegreeWeight.emplace_back(0U);
                 assert(nodeDegreeWeight.size() == raw_node.size());
             }
@@ -171,6 +179,9 @@ public:
         }
         return result;
     }
+//    [[nodiscard]] tuple<uint32_t, uint32_t> getIpAndCert(uint32_t center) const {
+//        if()
+//    }
     vector<vector<Hash>> bfsAnalyseGraphs() const {
         vector<NodeVisType> nodeStatus;
         vector<NodeDegreeType> nodeWeights;

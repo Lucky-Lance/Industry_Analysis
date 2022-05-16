@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "graph.h"
 #include "outputAPI.h"
+#include "randomOutputAPI.h"
 #include <filesystem>
 void divideGraph(){
     string linkName = "./Link.csv";
@@ -38,6 +39,17 @@ void subGraphToJsonForAnalyse(){
     f << graphToJson_echarts(links, nodes) << endl;
     f.close();
 }
+void outputForCWH(){
+    ofstream f;
+    f.open("./outputAPI/cwh.json", ios::out);
+//    f.open("./cwh.json", ios::out);
+    if(!f.good()){
+        cerr << "try to open './outputAPI/cwh.json' but failed!" << endl;
+        exit(1);
+    }
+    f << random_graphToJson_cwh(300);
+    f.close();
+}
 int main(){
 //    auto outputFolder = filesystem::path("/media/ftc/DATA/output/");
 //    if(!filesystem::is_directory(outputFolder)){
@@ -49,7 +61,8 @@ int main(){
 //            exit(1);
 //        }
 //    }
-    analyseTheBiggest();
+//    analyseTheBiggest();
 //    subGraphToJsonForAnalyse();
+    outputForCWH();
     return 0;
 }
