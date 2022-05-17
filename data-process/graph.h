@@ -50,10 +50,17 @@ struct Edge_Sort{
 	}
 };
 enum NodeAssetType{
-    DOMAIN_ASS, IP_ASS, CERT_ASS
+    DOMAIN_ASS, IP_ASS, CERT_ASS, OTHERS_ASS
 };
 const static map<string, NodeAssetType> stringToAssetType = {
-        {"Domain", DOMAIN_ASS}, {}
+        {"Domain", DOMAIN_ASS}, {"IP", IP_ASS},
+        {"Cert", CERT_ASS}, {"Whois_Name", OTHERS_ASS},
+        {"Whois_Phone", OTHERS_ASS}, {"Whois_Email", OTHERS_ASS},
+        {"IP_C", OTHERS_ASS}, {"ASN", OTHERS_ASS},
+};
+const static map<NodeAssetType, string> AssetTypeToString = {
+        {DOMAIN_ASS, "Domain"}, {IP_ASS, "IP"},
+        {CERT_ASS, "Cert"}, {OTHERS_ASS, "OTHERS_ASS"}
 };
 constexpr const uint32_t UNMATCHED = -1;
 class Graph{
@@ -65,15 +72,16 @@ private:
 	map<uint32_t, Hash> mapped_to_raw;// [连续化结点编号] -> [结点原始编号]
     map<uint32_t , vector<char>> mapped_to_black;
 	vector<int> nodeDegreeWeight;
-    vector<NodeAssetType> mapped_to_assetType;
+    map<uint32_t, NodeAssetType> mapped_to_assetType;
 public:
-    Graph(){}
+    Graph() = default;
     [[nodiscard]]size_t numNodes() const {
         return raw_node.size();
     }
     void insert(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes){
         // string relation; ItemType from, to;
         nodeDegreeWeight.reserve(nodeDegreeWeight.size()+nodes.size());
+        stringToAssetType.at("Domain");
         for(auto iter = nodes.cbegin(); iter != nodes.cend(); iter++){
             const Hash h = iter->first;
             if(raw_node.insert(h).second){
@@ -179,10 +187,48 @@ public:
         }
         return result;
     }
-//    [[nodiscard]] tuple<uint32_t, uint32_t> getIpAndCert(uint32_t center) const {
-//        if()
-//    }
-    vector<vector<Hash>> bfsAnalyseGraphs() const {
+    [[nodiscard]] vector<uint32_t> getMainAssetNodes(uint32_t center) const {
+        uint32_t centerWeight = nodeDegreeWeight[center];
+        vector<uint32_t> depth;
+        depth.resize(numNodes(), UNMATCHED);
+        // <nodeID, depth_i>
+        queue<tuple<uint32_t, uint32_t>> bfsQueue;
+        vector<uint32_t> mainAssetNodes;
+        {// process root
+            bfsQueue.emplace(make_tuple(center, 0U));
+            uint32_t nodeID = center;
+            NodeAssetType nodeAssetType = mapped_to_assetType.at(nodeID);
+            if(nodeAssetType == CERT_ASS || nodeAssetType == IP_ASS){
+                bfsQueue.emplace(make_tuple(nodeID, 0U));
+                mainAssetNodes.emplace_back(nodeID);
+            }
+        }
+        while (!bfsQueue.empty()) {
+            auto [nodeID, currentDepth] = bfsQueue.front();
+            bfsQueue.pop();
+            if (depth[nodeID] <= currentDepth) continue;
+            depth[nodeID] = currentDepth;
+//            clog << currentDepth << endl;
+            NodeAssetType nodeAssetType = mapped_to_assetType.at(nodeID);
+            if(nodeAssetType != DOMAIN_ASS)
+            clog << AssetTypeToString.at(nodeAssetType) << endl;
+            if(currentDepth > 0U) {
+                if(nodeAssetType == CERT_ASS || nodeAssetType == IP_ASS){
+//                    bfsQueue.emplace(make_tuple(nodeID, 0U));
+                    mainAssetNodes.emplace_back(nodeID);
+                }
+            }
+            const vector<Edge<Hash>> &rootEdges = edges.at(mapped_to_raw.at(nodeID));
+            uint32_t nextDepth = currentDepth + 1;
+            if(nextDepth > 2U) continue;
+            for (const auto &edge: rootEdges) {
+                uint32_t u = raw_to_mapped.at(edge.to);
+                bfsQueue.emplace(make_tuple(u, nextDepth));
+            }
+        }
+        return mainAssetNodes;
+    }
+    [[nodiscard]] vector<Hash> bfsAnalyseGraph() const {
         vector<NodeVisType> nodeStatus;
         vector<NodeDegreeType> nodeWeights;
         nodeWeights.reserve(numNodes());
@@ -190,7 +236,16 @@ public:
         for(uint32_t id=0; id< nodeDegreeWeight.size(); id++){
             nodeWeights.emplace_back(NodeDegreeType(id, nodeDegreeWeight[id]));
         }
-        sort(nodeWeights.begin(), nodeWeights.end(), greater<NodeDegreeType>());
+        sort(nodeWeights.begin(), nodeWeights.end(), greater<>());
+        uint32_t root = nodeWeights[0].mapped_id;
+        auto mainAssetNodes = getMainAssetNodes(root);
+        DEBUG
+        for(auto assetNode: mainAssetNodes){
+            cout << assetNode << ' ' << AssetTypeToString.at(mapped_to_assetType.at(assetNode))
+            << endl;
+        }
+        cout << endl;
+        return {};
         vector<vector<Hash>> subGraphs;
         for(const auto& nodeWeight: nodeWeights) {
             if(nodeWeight.degreeWeight < 800) break;
@@ -205,7 +260,7 @@ public:
             while (!bfsQueue.empty()) {
                 auto [nodeID, currentStatus] = bfsQueue.front();
                 bfsQueue.pop();
-                if (nodeStatus[nodeID] != UNVISITED_NODE) continue;
+                if (nodeStatus[nodeID] <= currentStatus) continue;
                 if (currentStatus < NORMAL_NODE && nodeDegreeWeight[nodeID] < 50) {
 //                cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down from " << nodeVisTypeToStr[currentStatus] << " to NORMAL!" << endl;
                     currentStatus = NORMAL_NODE;
@@ -235,10 +290,11 @@ public:
 //                cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down to USELESS!" << endl;
                     currentStatus = USELESS_NODE;
                 }
+                if (nodeStatus[nodeID] <= currentStatus) continue;
                 nodeStatus[nodeID] = currentStatus;
                 nodeTypeRecord[(size_t) currentStatus].emplace_back(nodeID);
 
-                NodeVisType nextStatus = static_cast<NodeVisType>(currentStatus + 1);
+                auto nextStatus = static_cast<NodeVisType>(currentStatus + 1);
                 if (nextStatus >= USELESS_NODE) continue;
                 const vector<Edge<Hash>> &rootEdges = edges.at(mapped_to_raw.at(nodeID));
                 for (const auto &edge: rootEdges) {
@@ -249,10 +305,92 @@ public:
                 }
             }
             vector<Hash> subGraph;
-            for (uint32_t depth = IMPORTANT_NODE; depth < USELESS_NODE; depth++) {
-                cout << "=================================== " << "depth = " << depth
+            for (uint32_t d = IMPORTANT_NODE; d < USELESS_NODE; d++) {
+                cout << "=================================== " << "depth = " << d
                      << " ===================================" << endl;
-                for (auto n: nodeTypeRecord[depth]) {
+                for (auto n: nodeTypeRecord[d]) {
+                    cout << nodeDegreeWeight[n] << ' ';
+                    subGraph.emplace_back(mapped_to_raw.at(n));
+                }
+                cout << endl;
+            }
+            subGraphs.emplace_back(move(subGraph));
+            for(auto iter=nodeStatus.begin(); iter!=nodeStatus.end();iter++){
+                if(*iter == USELESS_NODE) *iter = UNVISITED_NODE;
+            }
+        }
+        return {};
+    }
+    [[nodiscard]] vector<vector<Hash>> bfsAnalyseGraphs() const {
+        vector<NodeVisType> nodeStatus;
+        vector<NodeDegreeType> nodeWeights;
+        nodeWeights.reserve(numNodes());
+        nodeStatus.resize(numNodes(), UNVISITED_NODE);
+        for(uint32_t id=0; id< nodeDegreeWeight.size(); id++){
+            nodeWeights.emplace_back(NodeDegreeType(id, nodeDegreeWeight[id]));
+        }
+        sort(nodeWeights.begin(), nodeWeights.end(), greater<>());
+        vector<vector<Hash>> subGraphs;
+        for(const auto& nodeWeight: nodeWeights) {
+            if(nodeWeight.degreeWeight < 800) break;
+            array<vector<uint32_t>, UNVISITED_NODE> nodeTypeRecord;
+            uint32_t root = nodeWeight.mapped_id;
+            if(nodeStatus[root] != UNVISITED_NODE) continue;
+            cout << "Analyse root!" << endl;
+
+            auto depth = getDepth(root);
+            queue<tuple<uint32_t, NodeVisType>> bfsQueue;
+            bfsQueue.emplace(make_tuple(root, IMPORTANT_NODE));
+            while (!bfsQueue.empty()) {
+                auto [nodeID, currentStatus] = bfsQueue.front();
+                bfsQueue.pop();
+                if (nodeStatus[nodeID] <= currentStatus) continue;
+                if (currentStatus < NORMAL_NODE && nodeDegreeWeight[nodeID] < 50) {
+//                cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down from " << nodeVisTypeToStr[currentStatus] << " to NORMAL!" << endl;
+                    currentStatus = NORMAL_NODE;
+                }
+                if (depth[nodeID] < 4) {
+                    if (currentStatus > MATTER_NODE && nodeDegreeWeight[nodeID] > 800) {
+//                    cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought up to MATTER!" << endl;
+                        currentStatus = MATTER_NODE;
+                    } else if (currentStatus > NORMAL_NODE && nodeDegreeWeight[nodeID] > 300) {
+//                    cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought up to NORMAL!" << endl;
+                        currentStatus = NORMAL_NODE;
+                    }
+                    if (depth[nodeID] >= 2 && nodeDegreeWeight[nodeID] > 800 && currentStatus <= MATTER_NODE) {
+//                    cerr << "WARNING!!" << endl;
+                        currentStatus = USELESS_NODE;
+                    }
+                } else {
+                    if (currentStatus < INSIGNIFICANT_NODE && nodeDegreeWeight[nodeID] < 100) {
+//                    cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down to INSIGNIFICANT!" << endl;
+                        currentStatus = INSIGNIFICANT_NODE;
+                    } else if (nodeDegreeWeight[nodeID] < 50) {
+//                    cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down to USELESS!" << endl;
+                        currentStatus = USELESS_NODE;
+                    }
+                }
+                if (mapped_to_black.at(nodeID).empty() && currentStatus >= NORMAL_NODE) {
+//                cout << "node weight " << nodeDegreeWeight[nodeID] << " is brought down to USELESS!" << endl;
+                    currentStatus = USELESS_NODE;
+                }
+                if (nodeStatus[nodeID] <= currentStatus) continue;
+                nodeStatus[nodeID] = currentStatus;
+                nodeTypeRecord[(size_t) currentStatus].emplace_back(nodeID);
+
+                auto nextStatus = static_cast<NodeVisType>(currentStatus + 1);
+                if (nextStatus >= USELESS_NODE) continue;
+                const vector<Edge<Hash>> &rootEdges = edges.at(mapped_to_raw.at(nodeID));
+                for (const auto &edge: rootEdges) {
+                    uint32_t u = raw_to_mapped.at(edge.to);
+                    bfsQueue.emplace(make_tuple(u, nextStatus));
+                }
+            }
+            vector<Hash> subGraph;
+            for (uint32_t d = IMPORTANT_NODE; d < USELESS_NODE; d++) {
+                cout << "=================================== " << "depth = " << d
+                     << " ===================================" << endl;
+                for (auto n: nodeTypeRecord[d]) {
                     cout << nodeDegreeWeight[n] << ' ';
                     subGraph.emplace_back(mapped_to_raw.at(n));
                 }

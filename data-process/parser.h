@@ -6,7 +6,7 @@
 #include <map>
 #include <optional>
 #include <tuple>
-#include <assert.h>
+#include <cassert>
 #include <set>
 #include <filesystem>
 #include <iomanip>

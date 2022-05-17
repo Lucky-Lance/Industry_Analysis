@@ -50,6 +50,16 @@ void outputForCWH(){
     f << random_graphToJson_cwh(300);
     f.close();
 }
+void outputForFTC(){
+    DEBUG
+    string linkName = "/media/ftc/DATA/output/00000055-Link-00172977.csv";
+    string nodeName = "/media/ftc/DATA/output/00000055-Node-00172977.csv";
+    vector<LinkItemType> links = linkReader(linkName);
+    map<Hash, ItemType> nodes  = nodeReader(nodeName);
+    Graph graph;
+    graph.insert(links, nodes);
+    auto _ = graph.bfsAnalyseGraph();
+}
 int main(){
 //    auto outputFolder = filesystem::path("/media/ftc/DATA/output/");
 //    if(!filesystem::is_directory(outputFolder)){
@@ -63,6 +73,6 @@ int main(){
 //    }
 //    analyseTheBiggest();
 //    subGraphToJsonForAnalyse();
-    outputForCWH();
+    outputForFTC();
     return 0;
 }

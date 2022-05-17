@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include <random>
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 using namespace std;
 
