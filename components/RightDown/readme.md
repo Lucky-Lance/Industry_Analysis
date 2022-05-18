@@ -1,6 +1,6 @@
 #### 数据格式
 
-```json
+```
     var freqData = [
         { State: '0 - 50', Count: 100, freq: { Domain: 4786, IP: 1319, Cert: 249, ASN: 100 }, area: { Top: 1, Mid: 9, Bot: 11 } }
         , { State: '50 - 100', Count: 22, freq: { Domain: 1101, IP: 412, Cert: 674, ASN: 23 }, area: { Top: 2, Mid: 8, Bot: 12 } }
