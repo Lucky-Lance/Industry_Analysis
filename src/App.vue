@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 import * as vNG from "v-network-graph"
 import data from "./data"
 import {
@@ -8,26 +8,17 @@ import {
     ForceEdgeDatum,
 } from "v-network-graph/lib/force-layout"
 
-const paths: vNG.Paths = reactive({
-    path1: { edges: ["edge61", "edge81", "edge24", "edge3"], width: 0 },
-    // path2: { edges: ["edge2", "edge4", "edge6", "edge10"], width: 0 },
-})
-const pathNodes = [
-    new Set(["node36", "node18", "node34", "node25", "node41"]),
-    // new Set(["node3", "node2", "node4", "node6", "node10"]),
-]
-
 const selectedNodes = ref<string[]>([])
 
 const eventHandlers: vNG.EventHandlers = {
     "node:click": ({ node }) => {
         // toggle
-        // console.log(node);
+        data.nodes[node].color = "gray";
         for (let i = 0; i < 2; ++i)
-            if (pathNodes[i].has(node)) {
+            if (data.pathNodes[i].has(node)) {
                 let pathName = "path" + (i + 1).toString();
-                console.log(pathName, paths[pathName]);
-                paths[pathName].width = 10 - paths[pathName].width;
+                console.log(pathName, data.paths[pathName]);
+                data.paths[pathName].active ^= 1;
             }
         // data.nodes[node].active = !data.nodes[node].active
     },
@@ -54,24 +45,18 @@ const configs = vNG.defineConfigs({
         }),
     },
     node: {
-        node0: {
-            x: 0,
-            y: 0,
-            fixed: true, // Unaffected by force
-        },
         selectable: true,
         normal: {
             type: "rect",
             width: 32,
             height: 32,
             borderRadius: 8,
-            color: "#ff6f00",
+            radius: node => node.size,
+            color: node => node.color,
         },
         hover: {
-            color: "#ff5500",
-            width: 36,
-            height: 36,
-            borderRadius: 8,
+            radius: node => node.size + 2,
+            color: node => node.color,
         },
         label: {
             visible: true,
@@ -86,7 +71,11 @@ const configs = vNG.defineConfigs({
     },
     edge: {
         gap: 12,
-        normal: { color: "#6699cc" },
+        normal: {
+            width: edge => edge.width, // Use the value of each edge object
+            color: edge => edge.color,
+            dasharray: edge => (edge.dashed ? "4" : "0"),
+        },
         type: "curve",
         margin: 2,
         marker: {
@@ -111,7 +100,7 @@ const configs = vNG.defineConfigs({
     path: {
         visible: true,
         normal: {
-            width: path => path.width,
+            width: path => path.width * path.active,
             dasharray: "10 16",
             animate: true,
             animationSpeed: 40,
@@ -122,7 +111,7 @@ const configs = vNG.defineConfigs({
 
 <template>
     <v-network-graph v-model:selected-nodes="selectedNodes" :nodes="data.nodes" :edges="data.edges"
-        :layouts="data.layouts" :paths="paths" :configs="configs" :event-handlers="eventHandlers">
+        :layouts="data.layouts" :paths="data.paths" :configs="configs" :event-handlers="eventHandlers">
 
         <template #edge-label="{ edge, ...slotProps }">
             <v-edge-label :text="edge.label" :font-size="12" fill="#2d6df3" align="center" vertical-align="above"

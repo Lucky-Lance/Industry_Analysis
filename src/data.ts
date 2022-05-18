@@ -1,147 +1,129 @@
-import { Nodes, Edges, Layouts } from "v-network-graph"
+import { Nodes, Edges, Layouts, Paths } from "v-network-graph"
+import { reactive } from "vue"
+
 
 const nodes: Nodes = {
-    node0: { name: "0", icon: "&#xe2bd" },
-    node1: { name: "1", icon: "&#xe331" },
-    node2: { name: "2", icon: "&#xe2bd" },
-    node3: { name: "3", icon: "&#xe320" },
-    node4: { name: "4", icon: "&#xf0e2" },
-    node5: { name: "5", icon: "&#xf0e2" },
-    node6: { name: "6", icon: "&#xf0e2" },
-    node7: { name: "7", icon: "&#xe328" },
-    node8: { name: "8", icon: "&#xe2bd" },
-    node9: { name: "9", icon: "&#xe2bd" },
-    node10: { name: "10", icon: "&#xe320" },
-    node11: { name: "11", icon: "&#xe2bd" },
-    node12: { name: "12", icon: "&#xe328" },
-    node13: { name: "13", icon: "&#xe2bd" },
-    node14: { name: "14", icon: "&#xf0e2" },
-    node15: { name: "15", icon: "&#xf0e2" },
-    node16: { name: "16", icon: "&#xe328" },
-    node17: { name: "17", icon: "&#xf0e2" },
-    node18: { name: "18", icon: "&#xe331" },
-    node19: { name: "19", icon: "&#xe320" },
-    node20: { name: "20", icon: "&#xe2bd" },
-    node21: { name: "21", icon: "&#xe328" },
-    node22: { name: "22", icon: "&#xe320" },
-    node23: { name: "23", icon: "&#xf0e2" },
-    node24: { name: "24", icon: "&#xe320" },
-    node25: { name: "25", icon: "&#xe328" },
-    node26: { name: "26", icon: "&#xe331" },
-    node27: { name: "27", icon: "&#xf0e2" },
-    node28: { name: "28", icon: "&#xf0e2" },
-    node29: { name: "29", icon: "&#xf0e2" },
-    node30: { name: "30", icon: "&#xe328" },
-    node31: { name: "31", icon: "&#xe320" },
-    node32: { name: "32", icon: "&#xe328" },
-    node33: { name: "33", icon: "&#xe328" },
-    node34: { name: "34", icon: "&#xe328" },
-    node35: { name: "35", icon: "&#xe320" },
-    node36: { name: "36", icon: "&#xe2bd" },
-    node37: { name: "37", icon: "&#xe328" },
-    node38: { name: "38", icon: "&#xf0e2" },
-    node39: { name: "39", icon: "&#xe320" },
-    node40: { name: "40", icon: "&#xf0e2" },
-    node41: { name: "41", icon: "&#xf0e2" },
-    node42: { name: "42", icon: "&#xe331" },
-    node43: { name: "43", icon: "&#xf0e2" },
+    node1: {
+        name: "N1", icon: "&#xe320", /* Laptop Mac */
+        size: 16, color: "#ff6f00"
+    },
+    node2: {
+        name: "N2", icon: "&#xe328", /* Router */
+        size: 16, color: "#ff6f00"
+    },
+    node3: {
+        name: "N3", icon: "&#xe331", /* Tablet Mac */
+        size: 16, color: "#ff6f00"
+    },
+    node4: {
+        name: "N4", icon: "&#xe2bd", /* Cloud */
+        size: 20, color: "lightskyblue"
+    },
+    node5: {
+        name: "N5", icon: "&#xf0e2", /* Support Agent */
+        size: 16, color: "#ff6f00"
+    },
+    node6: {
+        name: "N6", icon: "&#xea75", /* Video Settings */
+        size: 16, color: "#ff6f00"
+    },
+    node7: {
+        name: "N7", icon: "&#xe2bd", /* Cloud */
+        size: 20, color: "lightskyblue"
+    },
+    node8: {
+        name: "N8", icon: "&#xe2bd", /* Cloud */
+        size: 20, color: "lightskyblue"
+    },
+    node9: {
+        name: "N9", icon: "&#xe2bd", /* Cloud */
+        size: 20, color: "lightskyblue"
+    },
+    node10: {
+        name: "N10", icon: "&#xe2bd", /* Cloud */
+        size: 20, color: "lightskyblue"
+    },
 }
 
 const edges: Edges = {
-    edge0: { source: "node0", target: "node34" },
-    edge1: { source: "node41", target: "node34" },
-    edge2: { source: "node41", target: "node42" },
-    edge3: { source: "node41", target: "node25" },
-    edge4: { source: "node41", target: "node29" },
-    edge5: { source: "node41", target: "node13" },
-    edge6: { source: "node41", target: "node21" },
-    edge7: { source: "node41", target: "node0" },
-    edge8: { source: "node41", target: "node15" },
-    edge9: { source: "node41", target: "node10" },
-    edge10: { source: "node41", target: "node9" },
-    edge11: { source: "node41", target: "node23" },
-    edge12: { source: "node41", target: "node5" },
-    edge13: { source: "node41", target: "node35" },
-    edge14: { source: "node41", target: "node4" },
-    edge15: { source: "node41", target: "node3" },
-    edge16: { source: "node41", target: "node6" },
-    edge17: { source: "node41", target: "node26" },
-    edge18: { source: "node41", target: "node2" },
-    edge19: { source: "node41", target: "node37" },
-    edge20: { source: "node41", target: "node33" },
-    edge21: { source: "node41", target: "node11" },
-    edge22: { source: "node41", target: "node43" },
-    edge23: { source: "node42", target: "node34" },
-    edge24: { source: "node25", target: "node34" },
-    edge25: { source: "node29", target: "node34" },
-    edge26: { source: "node13", target: "node34" },
-    edge27: { source: "node21", target: "node34" },
-    edge28: { source: "node15", target: "node34" },
-    edge29: { source: "node10", target: "node34" },
-    edge30: { source: "node9", target: "node34" },
-    edge31: { source: "node23", target: "node34" },
-    edge32: { source: "node5", target: "node34" },
-    edge33: { source: "node35", target: "node34" },
-    edge34: { source: "node4", target: "node34" },
-    edge35: { source: "node3", target: "node34" },
-    edge36: { source: "node6", target: "node34" },
-    edge37: { source: "node26", target: "node34" },
-    edge38: { source: "node2", target: "node34" },
-    edge39: { source: "node37", target: "node34" },
-    edge40: { source: "node33", target: "node34" },
-    edge41: { source: "node11", target: "node34" },
-    edge42: { source: "node43", target: "node34" },
-    edge43: { source: "node36", target: "node34" },
-    edge44: { source: "node36", target: "node7" },
-    edge45: { source: "node36", target: "node12" },
-    edge46: { source: "node36", target: "node38" },
-    edge47: { source: "node36", target: "node31" },
-    edge48: { source: "node36", target: "node30" },
-    edge49: { source: "node36", target: "node14" },
-    edge50: { source: "node36", target: "node32" },
-    edge51: { source: "node36", target: "node27" },
-    edge52: { source: "node36", target: "node24" },
-    edge53: { source: "node36", target: "node39" },
-    edge54: { source: "node36", target: "node19" },
-    edge55: { source: "node36", target: "node17" },
-    edge56: { source: "node36", target: "node20" },
-    edge57: { source: "node36", target: "node8" },
-    edge58: { source: "node36", target: "node1" },
-    edge59: { source: "node36", target: "node28" },
-    edge60: { source: "node36", target: "node40" },
-    edge61: { source: "node36", target: "node18" },
-    edge62: { source: "node36", target: "node16" },
-    edge63: { source: "node36", target: "node22" },
-    edge64: { source: "node7", target: "node34" },
-    edge65: { source: "node12", target: "node34" },
-    edge66: { source: "node38", target: "node34" },
-    edge67: { source: "node31", target: "node34" },
-    edge68: { source: "node30", target: "node34" },
-    edge69: { source: "node14", target: "node34" },
-    edge70: { source: "node32", target: "node34" },
-    edge71: { source: "node27", target: "node34" },
-    edge72: { source: "node24", target: "node34" },
-    edge73: { source: "node39", target: "node34" },
-    edge74: { source: "node19", target: "node34" },
-    edge75: { source: "node17", target: "node34" },
-    edge76: { source: "node20", target: "node34" },
-    edge77: { source: "node8", target: "node34" },
-    edge78: { source: "node1", target: "node34" },
-    edge79: { source: "node28", target: "node34" },
-    edge80: { source: "node40", target: "node34" },
-    edge81: { source: "node18", target: "node34" },
-    edge82: { source: "node16", target: "node34" },
-    edge83: { source: "node22", target: "node34" },
+    edge1: {
+        source: "node1", target: "node2", label: "1-2",
+        width: 5, color: "#ff6f00", dashed: true
+    },
+    edge2: {
+        source: "node3", target: "node2", label: "3-2",
+        width: 3, color: "skyblue"
+    },
+    edge3: {
+        source: "node2", target: "node4", label: "2-4",
+        width: 3, color: "skyblue"
+    },
+    edge4: {
+        source: "node2", target: "node4", label: "2-4",
+        width: 3, color: "skyblue"
+    },
+    edge5: {
+        source: "node4", target: "node5", label: "4-5",
+        width: 5, color: "#ff6f00", dashed: true
+    },
+    edge6: {
+        source: "node4", target: "node6", label: "4-6",
+        width: 5, color: "#ff6f00", dashed: true
+    },
+    edge7: {
+        source: "node5", target: "node7", label: "5-7",
+        width: 5, color: "#ff6f00", dashed: true
+    },
+    edge8: {
+        source: "node5", target: "node8", label: "5-8",
+        width: 5, color: "#ff6f00", dashed: true
+    },
+    edge9: {
+        source: "node6", target: "node9", label: "6-9",
+        width: 5, color: "#ff6f00", dashed: true
+    },
+    edge10: {
+        source: "node6", target: "node10", label: "6-10",
+        width: 3, color: "skyblue"
+    },
 }
+
+const paths: Paths = reactive({
+    path1: {
+        edges: ["edge1", "edge3", "edge5", "edge7"],
+        active: false, width: 10
+    },
+    path2: {
+        edges: ["edge2", "edge4", "edge6", "edge10"],
+        active: false, width: 10
+    },
+})
+
+const pathNodes = [
+    new Set(["node1", "node2", "node4", "node5", "node7"]),
+    new Set(["node3", "node2", "node4", "node6", "node10"]),
+]
 
 const layouts: Layouts = {
     nodes: {
+        // node1: { x: 0, y: 0 },
+        // node2: { x: 100, y: 60 },
+        // node3: { x: 0, y: 110 },
+        // node4: { x: 250, y: 60 },
+        // node5: { x: 350, y: 10 },
+        // node6: { x: 350, y: 110 },
+        // node7: { x: 450, y: 10 },
+        // node8: { x: 450, y: 60 },
+        // node9: { x: 450, y: 110 },
+        // node10: { x: 450, y: 160 },
     },
 }
 
 export default {
     nodes,
     edges,
+    paths,
+    pathNodes,
     layouts,
 }
 
