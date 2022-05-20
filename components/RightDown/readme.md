@@ -12,6 +12,19 @@
         , { State: '350 - 400', Count: 18, freq: { Domain: 8676, IP: 876, Cert: 665, ASN: 89 }, area: { Top: 8, Mid: 2, Bot: 18 } }
         , { State: '> 400', Count: 9, freq: { Domain: 3421, IP: 987, Cert: 354, ASN: 90 }, area: { Top: 9, Mid: 1, Bot: 19 } }
     ];
+
+    var type2field = {
+        'Domain': { 'Top': 12, 'Mid': 90, 'Bot': 21 }
+        , 'IP': { 'Top': 22, 'Mid': 80, 'Bot': 41 }
+        , 'Cert': { 'Top': 32, 'Mid': 20, 'Bot': 30 }
+        , 'ASN': { 'Top': 2, 'Mid': 60, 'Bot': 50 }
+    }
+
+    var field2type = {
+        'Top': { 'Domain': 12, 'IP': 90, 'Cert': 21, 'ASN': 10}
+        , 'Mid': { 'Domain': 22, 'IP': 80, 'Cert': 41, 'ASN': 30}
+        , 'Bot': { 'Domain': 32, 'IP': 20, 'Cert': 30, 'ASN': 40}
+    }
 ```
 
 #### 实现效果

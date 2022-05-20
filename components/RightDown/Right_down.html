@@ -13,10 +13,9 @@
 </body>
 
 <script>
-    function dashboard(id, fData) {
+    function dashboard(id, fData, type2field, field2type) {
         var barColor = 'steelblue';
         function segColor(c) { return { Domain: "#807dba", IP: "#e08214", Cert: "#41ab5d", ASN: "#E80000", Top: "#807dba", Mid: "#e08214", Bot: "#41ab5d" }[c]; }
-
 
         // compute total for each state.
         fData.forEach(function (d) { d.total = d.freq.Domain + d.freq.IP + d.freq.Cert + d.freq.ASN; });
@@ -139,6 +138,14 @@
             }
             // Utility function to be called on mouseover a pie slice.
             function mouseover(d) {
+
+                var filterField = type2field[d.data.type];
+                var field = []
+                for(var key in filterField){
+                    field.push({type: key, area: filterField[key]})
+                }
+                pC1.update(field);
+                leg1.update(field);
                 // call the update function of histogram with new data.
                 hG.update(fData.map(function (v) {
                     return [v.State, v.freq[d.data.type]];
@@ -150,6 +157,8 @@
                 hG.update(fData.map(function (v) {
                     return [v.State, v.Count];
                 }), barColor);
+                pC1.update(aF);
+                leg1.update(aF);
             }
             // Animating the pie-slice requiring a custom function which specifies
             // how the intermediate paths should be drawn.
@@ -164,7 +173,7 @@
         // function to handle pieChart.
         function pieChart_aF(pD) {
 
-            var pC = {}, pieDim = { w: 250, h: 250 };
+            var pC1 = {}, pieDim = { w: 250, h: 250 };
             pieDim.r = Math.min(pieDim.w, pieDim.h) / 2;
 
             // create svg for pie chart.
@@ -185,12 +194,22 @@
                 .on("mouseover", mouseover).on("mouseout", mouseout);
 
             // create function to update pie-chart. This will be used by histogram.
-            pC.update = function (nD) {
+            pC1.update = function (nD) {
                 piesvg.selectAll("path").data(pie(nD)).transition().duration(500)
                     .attrTween("d", arcTween);
             }
             // Utility function to be called on mouseover a pie slice.
             function mouseover(d) {
+
+                var filterType = field2type[d.data.type];
+
+                var field = [];
+                for(var key in filterType){
+                    field.push({type: key, freq: filterType[key]})
+                }
+                console.log(field)
+                pC.update(field);
+                leg.update(field);
                 // call the update function of histogram with new data.
                 hG.update(fData.map(function (v) {
                     return [v.State, v.area[d.data.type]];
@@ -202,6 +221,8 @@
                 hG.update(fData.map(function (v) {
                     return [v.State, v.Count];
                 }), barColor);
+                pC.update(tF);
+                leg.update(tF);
             }
             // Animating the pie-slice requiring a custom function which specifies
             // how the intermediate paths should be drawn.
@@ -210,7 +231,7 @@
                 this._current = i(0);
                 return function (t) { return arc(i(t)); };
             }
-            return pC;
+            return pC1;
         }
 
         // function to handle legend.
@@ -335,5 +356,18 @@
         , { State: '> 400', Count: 9, freq: { Domain: 3421, IP: 987, Cert: 354, ASN: 90 }, area: { Top: 9, Mid: 1, Bot: 19 } }
     ];
 
-    dashboard('#dashboard', freqData);
+    var type2field = {
+        'Domain': { 'Top': 12, 'Mid': 90, 'Bot': 21 }
+        , 'IP': { 'Top': 22, 'Mid': 80, 'Bot': 41 }
+        , 'Cert': { 'Top': 32, 'Mid': 20, 'Bot': 30 }
+        , 'ASN': { 'Top': 2, 'Mid': 60, 'Bot': 50 }
+    }
+
+    var field2type = {
+        'Top': { 'Domain': 12, 'IP': 90, 'Cert': 21, 'ASN': 10}
+        , 'Mid': { 'Domain': 22, 'IP': 80, 'Cert': 41, 'ASN': 30}
+        , 'Bot': { 'Domain': 32, 'IP': 20, 'Cert': 30, 'ASN': 40}
+    }
+
+    dashboard('#dashboard', freqData, type2field, field2type);
 </script>
