@@ -16,7 +16,7 @@
         <Widget
           class="bg-transparent"
           title="<h5>Map<span class='fw-semi-bold'>&nbsp;Statistics</span></h5>"
-          settings refresh close customHeader
+          customHeader
         >
           <p>Status: <strong>Live</strong></p>
           <p>
@@ -177,10 +177,10 @@
     <b-row>
       <b-col lg="6" xs="12">
         <Widget
-          title="<h6><span class='badge badge-danger mr-2'>New</span> Messages</h6>"
-          refresh close customHeader
-        >
-          <div class="widget-body p-0">
+          title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;结构图</span></h5"
+          customHeader>
+          <sub-graph/>
+          <!-- <div class="widget-body p-0">
             <div class="list-group list-group-lg">
               <a class="list-group-item" href="#">
                 <span class="thumb-sm float-left mr">
@@ -230,7 +230,7 @@
           </div>
           <footer class="bg-widget mt">
             <input type="search" class="form-control form-control-sm" placeholder="Search" />
-          </footer>
+          </footer> -->
         </Widget>
       </b-col>
       <!-- <b-col lg="4" xs="12">
@@ -308,8 +308,8 @@
       </b-col> -->
       <b-col lg="6" xs="12">
         <Widget
-          title="<h6>黑产子网<span class='fw-semi-bold'>&nbsp;统计数据</span></h6" bodyClass="p-0"
-          settings close customHeader>
+          title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;统计数据</span></h5" bodyClass="p-0"
+          customHeader>
           <right-down-chart/>
 
         </Widget>
@@ -325,12 +325,12 @@ import AnimatedNumber from "animated-number-vue";
 
 import MainGraph from "./components/MainGraph/MainGraph.vue"
 import RightDownChart from "./components/RightDownChart/RightDownChart.vue"
-// import SubGraph from "./components/SubGraph/SubGraph.vue"
+import SubGraph from "./components/SubGraph/SubGraph.vue"
 
 export default {
   name: 'Analysis',
   components: {
-    Widget,  AnimatedNumber, MainGraph, RightDownChart
+    Widget,  AnimatedNumber, MainGraph, RightDownChart, SubGraph
   },
   data() {
     return {

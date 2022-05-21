@@ -52,9 +52,13 @@ export default {
                     hGDim.h = 300 - hGDim.t - hGDim.b;
 
                 //create svg for histogram.
+                    
                 var hGsvg = d3.select(id).append("svg")
+                    // .attr("preserveAspectRatio", "xMidYMid meet")
+                    // .attr("viewBox", "0 0 "+hGDim.w + hGDim.l + hGDim.r+" "+hGDim.h + hGDim.t + hGDim.b)
                     .attr("width", hGDim.w + hGDim.l + hGDim.r)
-                    .attr("height", hGDim.h + hGDim.t + hGDim.b).append("g")
+                    .attr("height", hGDim.h + hGDim.t + hGDim.b)
+                    .append("g")
                     .attr("transform", "translate(" + hGDim.l + "," + hGDim.t + ")");
 
                 // create function for x-axis mapping.

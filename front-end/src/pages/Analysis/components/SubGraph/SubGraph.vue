@@ -29,32 +29,30 @@
     </v-network-graph>
 </template>
 
-
-<script setup lang="ts">
-    import { ref, unref, withModifiers } from '@vue/composition-api';
+<script setup>
+    import { ref } from "vue";
     import * as vNG from "v-network-graph"
     import data from "./data"
     import {
-        ForceLayout,
-        ForceNodeDatum,
-        ForceEdgeDatum,
+        ForceLayout
     } from "v-network-graph/lib/force-layout"
 
+    const selectedNodes = ref([])
 
-    const selectedNodes = ref<string[]>([])
-    const eventHandlers: vNG.EventHandlers = {
+    const eventHandlers = {
         "node:click": ({ node }) => {
             // toggle
             data.nodes[node].color = "gray";
             for (let i = 0; i < 2; ++i)
                 if (data.pathNodes[i].has(node)) {
                     let pathName = "path" + (i + 1).toString();
-                    // console.log(pathName, data.paths[pathName]);
+                    console.log(pathName, data.paths[pathName]);
                     data.paths[pathName].active ^= 1;
                 }
             // data.nodes[node].active = !data.nodes[node].active
         },
     }
+
     const configs = vNG.defineConfigs({
         view: {
             scalingObjects: true,
