@@ -1,21 +1,22 @@
 <template>
   <div class="visits-page">
-    <h1 class="page-title">主分析面板 &nbsp;
+    <h1 class="page-title">黑灰产元网络 &nbsp;
       <small>
-        <small>The Lucky One</small>
+        <small>The meta network</small>
       </small>
     </h1>
     <b-row>
       <b-col lg="7">
         <Widget class="bg-transparent">
-          <Map />
+          <!-- <Map /> -->
+          <main-graph/>
         </Widget>
       </b-col>
       <b-col lg="4" offset-lg="1">
         <Widget
           class="bg-transparent"
           title="<h5>Map<span class='fw-semi-bold'>&nbsp;Statistics</span></h5>"
-          settings refresh close customHeader
+          customHeader
         >
           <p>Status: <strong>Live</strong></p>
           <p>
@@ -75,7 +76,7 @@
         </Widget>
       </b-col>
     </b-row>
-    <b-row>
+    <!-- <b-row>
       <b-col xl="4" xs="12">
         <Widget
           title="<h6> USERBASE GROWTH </h6>"
@@ -172,14 +173,14 @@
           </p>
         </Widget>
       </b-col>
-    </b-row>
+    </b-row> -->
     <b-row>
-      <b-col lg="4" xs="12">
+      <b-col lg="6" xs="12">
         <Widget
-          title="<h6><span class='badge badge-danger mr-2'>New</span> Messages</h6>"
-          refresh close customHeader
-        >
-          <div class="widget-body p-0">
+          title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;结构图</span></h5"
+          customHeader>
+          <sub-graph/>
+          <!-- <div class="widget-body p-0">
             <div class="list-group list-group-lg">
               <a class="list-group-item" href="#">
                 <span class="thumb-sm float-left mr">
@@ -229,10 +230,10 @@
           </div>
           <footer class="bg-widget mt">
             <input type="search" class="form-control form-control-sm" placeholder="Search" />
-          </footer>
+          </footer> -->
         </Widget>
       </b-col>
-      <b-col lg="4" xs="12">
+      <!-- <b-col lg="4" xs="12">
         <Widget
           title="<h6> Market <span class='fw-semi-bold'>Stats</span></h6>"
           close customHeader
@@ -304,22 +305,13 @@
             <area-chart class="area-chart" :height="100" :options="{legend: false, scales: {yAxes: [{display: false}], xAxes: [{display: false}]}}"  :chart-data="dataCollection"></area-chart>
           </div>
         </Widget>
-      </b-col>
-      <b-col lg="4" xs="12">
+      </b-col> -->
+      <b-col lg="6" xs="12">
         <Widget
-          title="<h6>Calendar</h6" bodyClass="p-0"
-          settings close customHeader>
-          <Calendar />
-          <div class="list-group fs-mini">
-            <a href="#" class="list-group-item text-ellipsis">
-              <span class="badge badge-pill bg-primary float-right">6:45</span>
-              Weed out the flower bed
-            </a>
-            <a href="#" class="list-group-item text-ellipsis">
-              <span class="badge badge-pill badge-success float-right">9:41</span>
-              Stop world water pollution
-            </a>
-          </div>
+          title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;统计数据</span></h5" bodyClass="p-0"
+          customHeader>
+          <right-down-chart/>
+
         </Widget>
       </b-col>
     </b-row>
@@ -329,15 +321,16 @@
 <script>
 import Vue from 'vue';
 import Widget from '@/components/Widget/Widget';
-import Map from './components/Map/Map';
-import Calendar from './components/Calendar/Calendar';
-import AreaChart from './components/AreaChart/AreaChart';
 import AnimatedNumber from "animated-number-vue";
 
+import MainGraph from "./components/MainGraph/MainGraph.vue"
+import RightDownChart from "./components/RightDownChart/RightDownChart.vue"
+import SubGraph from "./components/SubGraph/SubGraph.vue"
+
 export default {
-  name: 'Visits',
+  name: 'Analysis',
   components: {
-    Widget, Map, Calendar, AreaChart, AnimatedNumber
+    Widget,  AnimatedNumber, MainGraph, RightDownChart, SubGraph
   },
   data() {
     return {
@@ -405,4 +398,4 @@ export default {
 };
 </script>
 
-<style src="./Visits.scss" lang="scss" />
+<style src="./Analysis.scss" lang="scss" />

@@ -3,7 +3,7 @@
   <Header />
   <div :class="{root: true, sidebarClose}">
     <!-- <Helper /> -->
-    <Sidebar />
+    <!-- <Sidebar /> -->
     <div ref="content" class="content animated fadeInUp">
       <transition name="router-animation">
         <router-view />

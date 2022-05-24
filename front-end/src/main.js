@@ -12,6 +12,17 @@ import router from './Routes';
 import App from './App';
 import layoutMixin from './mixins/layout';
 
+import api from "./interface/index"
+Vue.prototype.$api = api.commonUrl
+
+import VNetworkGraph from "v-network-graph"
+import "v-network-graph/lib/style.css"
+
+Vue.use(VNetworkGraph)
+
+// import VueCompositionAPI from '@vue/composition-api'
+// Vue.use(VueCompositionAPI)
+
 Vue.use(BootstrapVue);
 Vue.use(VCalendar, {
   firstDayOfWeek: 2

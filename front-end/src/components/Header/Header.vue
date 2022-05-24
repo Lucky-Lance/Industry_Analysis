@@ -1,17 +1,17 @@
 <template>
   <b-navbar toggleable="md" class="app-header d-print-none">
     <header class="logo">
-      <router-link to="/app/dashboard"><span class="fw-bold">黑灰产网络资产图谱</span> 可视分析系统</router-link>
+      <router-link to="/analysis"><span class="fw-bold">黑灰产网络资产图谱</span> 可视分析系统</router-link>
     </header>
 
-    <b-navbar-nav class="navbar-nav-mobile mr-auto">
+    <b-navbar-nav class="navbar-nav-mobile mx-auto">
       <header class="logo-mobile">
-        <router-link to="/app/dashboard"><span class="fw-bold">黑灰产网络资产图谱</span> 可视分析系统</router-link>
+        <router-link to="/analysis"><span class="fw-bold">黑灰产网络资产图谱</span> 可视分析系统</router-link>
       </header>
     </b-navbar-nav>
 
 
-    <b-navbar-nav class="navbar-nav-mobile ml-auto">
+    <!-- <b-navbar-nav class="navbar-nav-mobile ml-auto"> -->
 
         <!-- <b-nav-text class="mr-3">
           <b-alert class="header-alert animate__animated animate__bounceIn animate__delay-2s" dismissible v-model="showNavbarAlert">
@@ -118,10 +118,10 @@
         <b-nav-item class="d-md-down-none" @click="logout">
           <i class="fi flaticon-power-1 px-2" />
         </b-nav-item> -->
-        <b-nav-item class="d-md-none" @click="switchSidebarMethod" >
+        <!-- <b-nav-item class="d-md-none" @click="switchSidebarMethod" >
           <i class="la la-navicon px-2" />
-        </b-nav-item>
-      </b-navbar-nav>
+        </b-nav-item> -->
+      <!-- </b-navbar-nav> -->
   </b-navbar>
 </template>
 

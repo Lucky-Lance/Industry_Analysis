@@ -19,9 +19,7 @@
           <ve-table :columns="columns" 
             :table-data="tableData" 
             :max-height="300"
-            :virtual-scroll-option="virtualScrollOption"
             :border-around="false"/>
-
           </Widget>
         </b-col>
         <b-col xs="12" lg="7">
@@ -249,8 +247,28 @@ export default {
   },
   beforeDestroy() {
     clearInterval(liveChartInterval);
-  }
+  },
+  mounted() {
+    /* eslint-disable */
+    const axios = require('axios');
+    axios.get(this.$api + "/items/0")
+      .then(function (response) {
+        // 处理成功情况
+        console.log(response.data.content);
+      })
+      .catch(function (error) {
+        // 处理错误情况
+        console.log(error);
+      })
+      .then(function () {
+        // 总是会执行
+        console.log("finish");
+      });
+  },
 };
+
+  
+
 </script>
 
 <style src="./Charts.scss" lang="scss" />

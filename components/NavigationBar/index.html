@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Overview Demo</title>
+
+    <link rel="stylesheet" href="./static/bootstrap.min.css">
+    <script type="text/javascript" src="./static/jquery.min.js"></script>
+    <script type="text/javascript" src="./static/vis-network.min.js"></script>
+    <link rel="stylesheet" href="./static/style.css">
+
+</head>
+
+<body>
+    <div id="mynetwork"></div>
+
+    <!--节点悬停-->
+    <div class="menu" id="divHoverNode" style="display: none;">
+    </div>
+
+    <script type="text/javascript">
+        // 创建节点数据数组
+        var allNodes = [
+            { id: 1, industry: "industry1", type: "Parent", pid: 0, subids: [2, 3, 4, 5], group: 0, label: "industry1" },
+            { id: 2, industry: "industry1", type: "cert", value: "3", port: "22", pid: 1, group: 0, label: "cert" },
+            { id: 3, industry: "industry1", type: "ip", value: "200", pid: 1, group: 0, label: "ip" },
+            { id: 4, industry: "industry1", type: "domain", value: "10", pid: 1, group: 0, label: "domain" },
+            { id: 5, industry: "industry1", type: "name", value: "20", pid: 1, group: 0, label: "name" },
+
+
+            { id: 6, industry: "industry2", type: "Parent", pid: 0, subids: [7, 8, 9, 10], group: 1, label: "industry2" },
+            { id: 7, industry: "industry2", type: "cert", value: "30", pid: 6, group: 1, label: "cert" },
+            { id: 8, industry: "industry2", type: "ip", value: "200", pid: 6, group: 1, label: "ip" },
+            { id: 9, industry: "industry2", type: "domain", value: "10", pid: 6, group: 1, label: "domain" },
+            { id: 10, industry: "industry2", type: "name", value: "40", pid: 6, group: 1, label: "name" }
+        ];
+
+        // 创建边数据数组
+        var allEdges = [
+            { id: "1_2", from: 1, to: 2 },
+            { id: "1_3", from: 1, to: 3 },
+            { id: "1_4", from: 1, to: 4 },
+            { id: "1_5", from: 1, to: 5 },
+
+            { id: "6_7", from: 6, to: 7 },
+            { id: "6_8", from: 6, to: 8 },
+            { id: "6_9", from: 6, to: 9 },
+            { id: "6_10", from: 6, to: 10 }
+        ];
+
+        // 获取容器
+        var container = document.getElementById('mynetwork');
+        // 创建节点对象
+        var nodes = new vis.DataSet(allNodes);
+        // 创建连线对象
+        var edges = new vis.DataSet(allEdges);
+        // 将数据赋值给vis 数据格式化器
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        // console.log('nodes',data.nodes);
+
+        var options = {
+            nodes: {
+                shape: "dot",
+                borderWidth: 2,
+                scaling: {
+                    customScalingFunction: function (min, max, total, value) {
+                        return value / total;
+                    },
+                    min: 5,
+                    max: 40,
+                },
+                shadow: true,
+            },
+            edges: {
+                width: 2,
+                shadow: true,
+            },
+            interaction: {
+                hover: true,
+                hoverConnectedEdges: true
+            },
+        };
+
+
+        // 初始化关系图
+        var network = new vis.Network(container, data, options);
+
+        // 初始删除所有子结点
+        var initial_delele = []
+        for (let i = 0; i < allNodes.length; i++) {
+            // console.log(allNodes[i].id)
+            let node_id = allNodes[i].id;
+            let flag = false;
+            var sub_nodes = get_directly_sub_nodes(node_id);
+            // console.log(node_id, sub_nodes)
+            if (sub_nodes.length == 0) {
+                continue;
+            }
+            for (let j = 0; j < initial_delele.length; j++) {
+                if (node_id == initial_delele[j]) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (flag == true) {
+                continue;
+            }
+            remove_all_sub_nodes(node_id);
+            initial_delele.push(node_id);
+            for (let j = 0; j < sub_nodes.length; j++) {
+                initial_delele.push(sub_nodes[j]);
+            }
+        };
+
+        /**
+         * 节点鼠标悬停（点击）获取到的信息
+         * 因为hoverNode事件官方文档中给的信息悬停时只传了id值，想在鼠标悬停的时候显示该节点的信息拿不到值，所以遍历节点，相等的时候return改节点的信息
+         * @param option-----鼠标悬停时取得的id
+         * @returns {{flag, port, ip, name, ignore, id, type}|{flag, port, ip, name, ignore, model, id, type, mac, uptime}|{flag, port, ip, name, ignore, model, location, id, type, mac, account, uptime}|*}
+         */
+        function getNode(option) {
+            for (var i = 0; i < allNodes.length; i++) {
+                if (option == allNodes[i].id) {
+                    // console.log('i',allNodes[i]);
+                    return allNodes[i];
+                }
+            }
+        }
+
+        /**
+         * 线悬停（点击）时两端节点的信息（与节点类似）
+         * edges中加了id属性，代表线条指向，悬停时通过edges--id与nodes--id对比，将两端节点信息拼凑出来
+         * @param option----鼠标悬停在线上时取得的id
+         * @returns {Array}
+         */
+        function getEdge(option) {
+            var linkId = option;
+            var linkIdFirst = linkId.substring(0, 1);//截取第一位
+            var linkIdLast = linkId.substring(linkId.length - 1, linkId.length);//截取最后一位
+            var dataList = [];//存放线条两边的节点nodes数据
+            for (var j = 0; j < allNodes.length; j++) {
+                if (linkIdFirst == allNodes[j].id || linkIdLast == allNodes[j].id) {
+                    dataList.push(allNodes[j]);
+                }
+            }
+            return dataList;
+        }
+        //todo  悬停在节点上--显示弹框
+        network.on('hoverNode', function (properties) {
+            // console.log('悬停节点',properties);
+            var hoveNodeList = getNode(properties.node);
+            // console.log('hoveNodeList',hoveNodeList);
+            var deviceType = hoveNodeList.type;
+            var imgPathSrc = hoveNodeList.image;
+            if (deviceType == "Parent") {
+                var $ul = "<ul>"
+                    + "<li>Industry：" + hoveNodeList.industry + "</li>"
+                    + "</ul>";
+                $("#divHoverNode").append($ul);
+            } else {
+                var $ul = "<ul>"
+                    // +"<li><img src=' "+imgPathSrc+" ' width='30px' height='25px'><span> 设备类型："+hoveNodeList.name+" </span> </li>"
+                    + "<li>Industry：" + hoveNodeList.industry + "</li>"
+                    + "<li>Type：" + hoveNodeList.type + "</li>"
+                    + "<li>Count：" + hoveNodeList.value + "</li>"
+                    + "</ul>";
+                $("#divHoverNode").append($ul);
+            }
+            $('#divHoverNode').css({
+                'display': 'block',
+                'left': properties.event.offsetX + 15,
+                'top': properties.event.offsetY + 15
+            });
+            $('#menuOperation').hide();
+        });
+        //todo  从节点移开---隐藏弹框
+        network.on('blurNode', function () {
+            $("#divHoverNode").hide();
+            $("#divHoverNode").empty();//移除之后清空div
+        });
+        //todo  悬停在边上--显示弹框
+        network.on('hoverEdge', function (properties) {
+            // console.log('悬停边',properties);
+            var hoveEdgeList = getEdge(properties.edge);
+            // console.log('hoveEdgeList',hoveEdgeList);
+            var $ul = "<ul>"
+                + "</ul>";
+            $("#divHoverNode").append($ul);
+            $('#divHoverNode').css({
+                'display': 'block',
+                'left': properties.event.offsetX + 15,
+                'top': properties.event.offsetY + 15
+            });
+            $('#menuOperation').hide();
+        });
+        //todo  从边上移开---隐藏弹框
+        network.on('blurEdge', function (properties) {
+            $("#divHoverNode").hide();
+            $("#divHoverNode").empty();//移除之后清空div
+        });
+        //todo  点击的判断是否选中节点时候显示隐藏
+        network.on('click', function (properties) {
+            var clickNodeList = getNode(properties.nodes[0]);
+            // console.log('clickNodeList',clickNodeList);
+            if (typeof (clickNodeList) == "undefined") {
+                $('#menuOperation').hide();
+            } else {
+                $('#menuOperation').css({
+                    'display': 'block',
+                    'left': properties.event.center.x + 15,
+                    'top': properties.event.center.y + 15
+                });
+                $("#divHoverNode").hide();
+            }
+        });
+        //todo 双击时折叠和展开
+        network.on("doubleClick", function (params) {//双击事件
+            if (params.nodes.length != 0) {//确定为节点双击事件
+                var click_node_id = params.nodes[0];
+                remove_all_sub_nodes(click_node_id);
+            }
+        });
+
+        //todo 删除下级所有节点
+        function remove_all_sub_nodes(node_id) {
+            var sub_nodes = get_directly_sub_nodes(node_id);
+            // console.log('sub_nodes',sub_nodes)
+            if (sub_nodes.length == 0) {//当前点击的为叶子节点
+                //判断是否有下级节点
+                // console.log('sub',allNodes[node_id - 1]['subids']);
+                if (typeof (allNodes[node_id - 1]['subids']) != 'undefined') {
+                    console.log(allNodes[node_id - 1]['industry'])
+                    console.log("leaf get activated, add")
+                    $.each(allNodes[node_id - 1]['subids'], function (index, item) {
+                        // console.log('allNodes[item - 1]',allNodes[item - 1])
+                        nodes.add(allNodes[item - 1]);
+                        edges.add({ id: node_id + '_' + item, from: node_id, to: item });
+                    });
+                } else {
+                    // alert('当前为叶子节点');
+                }
+            } else {
+                console.log(allNodes[node_id - 1]['industry'])
+                console.log("parent get activated, remove")
+                $.each(sub_nodes, function (index, item) {
+                    var sub_sub_nodes = get_directly_sub_nodes(item);
+                    if (sub_sub_nodes.length == 0) {
+                        nodes.remove({ id: item });
+                        edges.remove({ id: node_id + '_' + item });
+                    } else {
+                        remove_all_sub_nodes(item);
+                    }
+                    nodes.remove({ id: item });
+                    edges.remove({ id: node_id + '_' + item });
+                });
+            }
+        }
+
+        //todo 获取某节点直属下级节点
+        function get_directly_sub_nodes(node_id) {
+            var return_nodes = [];
+            var connectedNodes = network.getConnectedNodes(node_id);//获取所有连接节点
+            $.each(connectedNodes, function (index, item) {
+                // console.log('allNodes',allNodes)
+                if (item != allNodes[node_id - 1]['pid']) {//当前节点的父节点 ，不操作
+                    return_nodes.push(item);
+                }
+            });
+            return return_nodes;
+        }
+    </script>
+</body>
