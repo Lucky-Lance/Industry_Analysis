@@ -43,12 +43,7 @@ struct Edge{
 	}
 	Edge(T f, T t,int w):from(f),to(t),weight(w){}
 };
-template<class T>
-struct Edge_Sort{
-	bool operator()(const Edge<T>& a,const Edge<T>& b){
-		return a.weight < b.weight;
-	}
-};
+
 enum NodeAssetType{
     DOMAIN_ASS, IP_ASS, CERT_ASS, OTHERS_ASS
 };
@@ -64,8 +59,7 @@ const static map<NodeAssetType, string> AssetTypeToString = {
 };
 constexpr const uint32_t UNMATCHED = -1;
 class Graph{
-private:
-
+public:
     map<uint32_t , vector<Edge<uint32_t>> > edges;// edge<T> 存的[结点原始编号]
     set<Hash> raw_node;// 存放所有结点,存的[结点原始编号]
 	map<Hash, uint32_t> raw_to_mapped;// [结点原始编号] -> [连续化结点编号]
@@ -75,6 +69,8 @@ private:
     map<uint32_t, NodeAssetType> mapped_to_assetType;
 public:
     Graph() = default;
+    Graph(const Graph&) = delete;
+
     [[nodiscard]]size_t numNodes() const {
         return raw_node.size();
     }
@@ -113,34 +109,25 @@ public:
 
             uint32_t mapped_from = raw_to_mapped[from];
             uint32_t mapped_to = raw_to_mapped[to];
-            nodeDegreeWeight[mapped_from] += W_to_2_from;
-            nodeDegreeWeight[mapped_to] += W_from_2_to;
+//            nodeDegreeWeight[mapped_from] += W_to_2_from;
+//            nodeDegreeWeight[mapped_to] += W_from_2_to;
+            nodeDegreeWeight[mapped_from] += weight;
+            nodeDegreeWeight[mapped_to] += weight;
             {//  无向边 from -> to
-                Edge<uint32_t> e(mapped_from, mapped_to, W_from_2_to);
+//                Edge<uint32_t> e(mapped_from, mapped_to, W_from_2_to);
+                Edge<uint32_t> e(mapped_from, mapped_to, weight);
                 edges[mapped_from].emplace_back(e);
             }
             {//  无向边 to -> from
-                Edge<uint32_t> e(mapped_to, mapped_from, W_to_2_from);
+//                Edge<uint32_t> e(mapped_to, mapped_from, W_to_2_from);
+                Edge<uint32_t> e(mapped_to, mapped_from, weight);
                 edges[mapped_to].emplace_back(e);
             }
         }
     }
 
 private:
-	vector<vector<uint32_t>> dfsGroup;
-	vector<uint32_t> dfsVers;
-	void _dfsDivide(uint32_t v, uint32_t verNum){
-	    dfsVers[v] = verNum;
-	    dfsGroup[verNum].push_back(v);
-//	    Hash h = mapped_to_raw[v];
-	    for(const auto& edge: edges[v]){
-            if(edge.weight <= 1) continue;
-            uint32_t u = edge.to;
-            if(dfsVers[u] == UNMATCHED){
-                _dfsDivide(u, verNum);
-            }
-	    }
-	}
+
 
 public:
     struct NodeDegreeType{
@@ -168,6 +155,10 @@ public:
     using DepthType = uint32_t;
     [[nodiscard]]vector<uint32_t> getDepth(const vector<tuple<NodeIdType, DepthType>>& centers) const {
         cout << "UNMATCHED = " << UNMATCHED << endl;
+        set<NodeIdType> centerSet;
+        for(const auto& c: centers){
+            centerSet.insert(get<0>(c));
+        }
         vector<uint32_t> result;
         result.resize(numNodes(), UNMATCHED);
         queue<tuple<NodeIdType, DepthType>> bfsQueue;
@@ -178,7 +169,15 @@ public:
             auto [nodeID, nodeDepth] = bfsQueue.front();
             bfsQueue.pop();
             if(nodeDepth >= result[nodeID]) continue;
-            result[nodeID] = nodeDepth;
+            if(centerSet.find(nodeID) == centerSet.cend()){
+                result[nodeID] = nodeDepth;
+            }
+            else{
+                if(result[nodeID] == UNMATCHED){
+                    result[nodeID] = nodeDepth;
+                }
+                else continue;
+            }
             uint32_t nextDepth = nodeDepth + 1;
             const auto& rootEdges = edges.at(nodeID);
             for(const auto& edge: rootEdges){
@@ -207,8 +206,8 @@ public:
             depth[nodeID] = currentDepth;
             NodeAssetType nodeAssetType = mapped_to_assetType.at(nodeID);
             if(currentDepth <= maxDepth && (nodeAssetType == CERT_ASS || nodeAssetType == IP_ASS)){
-                uint32_t weight = currentDepth == 0? 0U : 1U;
-//                uint32_t weight = currentDepth;
+//                uint32_t weight = currentDepth == 0? 0U : 1U;
+                uint32_t weight = currentDepth;
                 auto ptr = mainAssetMap.insert(make_pair(nodeID, weight));
                 if(!ptr.second){
                     ptr.first->second = weight;
@@ -231,6 +230,7 @@ public:
         return result;
     }
     [[nodiscard]] vector<Hash> bfsAnalyseGraph() const {
+        // main function
         vector<NodeVisType> nodeStatus;
         vector<NodeDegreeType> nodeWeights;
         nodeWeights.reserve(numNodes());
@@ -240,9 +240,39 @@ public:
         }
         sort(nodeWeights.begin(), nodeWeights.end(), greater<>());
         uint32_t root = nodeWeights[0].mapped_id;
-//        cout << raw_to_mapped[root].
         auto mainAssetNodes = getMainAssetNodes(root, 2U);
+
+        for(auto ptr=mainAssetNodes.begin();ptr!=mainAssetNodes.end();ptr++){
+            uint32_t nodeID = get<0>(*ptr);
+            if(nodeID == root){
+                cout << "root depth = " << get<1>(*ptr) << endl;
+                *ptr = make_tuple(nodeID, 0);
+                continue;
+            }
+            if(getNeighborBlack(nodeID)<0.2){
+                cout << "------------------" << endl;
+                *ptr = make_tuple(nodeID, 4);
+                continue;
+            }
+            auto maxFlow = getMaxFlow(root, nodeID);
+            cout << maxFlow << " / " << nodeDegreeWeight[nodeID] << endl;
+            if(maxFlow < nodeDegreeWeight[nodeID] * 0.5){
+                *ptr = make_tuple(nodeID, 4);
+                cout << "set to 4" << endl;
+            }
+            else if(maxFlow < nodeDegreeWeight[nodeID] * 0.8){
+                *ptr = make_tuple(nodeID, 2);
+                cout << "set to 2" << endl;
+            }
+            else if(maxFlow > nodeDegreeWeight[nodeID] * 0.9){
+                *ptr = make_tuple(nodeID, 1);
+            }
+        }
         auto depth = getDepth(mainAssetNodes);
+        for(auto mainAssetNode: mainAssetNodes){
+            auto [nodeID, nodeDepth] = mainAssetNode;
+            assert(depth[nodeID] == nodeDepth);
+        }
         vector<Hash> result;
         for(uint32_t nodeID=0; nodeID<depth.size();nodeID++){
             if(depth[nodeID]<=2){
@@ -335,7 +365,21 @@ public:
         return subGraphs;
     }
 public:
-	[[nodiscard]] vector<vector<Hash>> divideSubGraph(){
+	[[nodiscard]] vector<vector<Hash>> divideSubGraph() const {
+        vector<vector<uint32_t>> dfsGroup;
+        vector<uint32_t> dfsVers;
+        function<void(uint32_t, uint32_t)> _dfsDivide =
+                [&dfsVers, &dfsGroup, &_dfsDivide, this](uint32_t v, uint32_t verNum){
+            dfsVers[v] = verNum;
+            dfsGroup[verNum].push_back(v);
+            for(const auto& edge: edges.at(v)){
+                if(edge.weight <= 1) continue;
+                uint32_t u = edge.to;
+                if(dfsVers[u] == UNMATCHED){
+                    _dfsDivide(u, verNum);
+                }
+            }
+        };
 	    uint32_t verNum = 0;
         dfsVers.resize(raw_node.size(), UNMATCHED);
 	    DEBUG
@@ -353,14 +397,42 @@ public:
 	        vector<Hash> subGraph;
             subGraph.reserve(group.size());
 	        for(uint32_t v: group){
-	            subGraph.emplace_back(mapped_to_raw[v]);
+	            subGraph.emplace_back(mapped_to_raw.at(v));
 	        }
 	        subGraphs.emplace_back(move(subGraph));
 	    }
         return subGraphs;
 	}
+    [[nodiscard]] double getNeighborBlack (uint32_t nodeID) const {
+        const auto& edge = edges.at(nodeID);
+        size_t totalCount = 0;
+        size_t blackCount = 0;
+        for(const auto& e: edge){
+            if(mapped_to_assetType.at(e.to) != DOMAIN_ASS) continue;
+            totalCount += 1;
+            const auto& black = mapped_to_black.at(e.to);
+            if(!black.empty()) blackCount += 1;
+        }
+        if(totalCount == 0) return 0;
+        return double(blackCount) / totalCount;
+    }
+    [[nodiscard]] vector<Hash> getBorderNodes()const{
+        vector<Hash> result;
+        for(const auto& nodeBlack: mapped_to_black){
+            auto nodeID = nodeBlack.first;
+            const auto& nodeBlackList = nodeBlack.second;
+//            if(mapped_to_assetType.at(nodeID) != DOMAIN_ASS) continue;
+//            if(!nodeBlackList.empty()) continue;
+            if(edges.at(nodeID).size() <= 1){
+                result.emplace_back(mapped_to_raw.at(nodeID));
+            }
+        }
+        cout << "border nodes size = " << result.size() << endl;
+        return result;
+    }
     [[nodiscard]] int64_t getMaxFlow(uint32_t mapped_from, uint32_t mapped_to) const {
-        static const constexpr int64_t MAX_LLD = numeric_limits<uint64_t>::max()>>2;
+        assert(mapped_from != mapped_to);
+        static const constexpr int64_t MAX_LLD = numeric_limits<int64_t>::max();
         uint32_t n = numNodes();
         uint32_t m = numEdges();
         uint32_t s = mapped_from;
@@ -368,11 +440,11 @@ public:
         vector<bool> isVisit;
         vector<uint32_t> depth, to, next, first;
         vector<int64_t> weight;
-        isVisit.resize(n, false);
-        depth.resize(n, 0);
+        isVisit.resize(n+1, false);
+        depth.resize(n+1, 0);
         to.reserve(2*m);
         next.reserve(2*m);
-        first.resize(n, UNMATCHED);
+        first.resize(n+1, UNMATCHED);
         weight.reserve(2*m);
 
         auto addEdge = [&to, &weight, &first, &next]

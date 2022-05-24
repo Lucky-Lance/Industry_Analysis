@@ -9,6 +9,7 @@
 #include <cassert>
 #include <set>
 #include <filesystem>
+#include <algorithm>
 #include <iomanip>
 using namespace std;
 #define DEBUG printf("%s:%d\n", __FILE__, __LINE__);
@@ -141,7 +142,7 @@ struct ItemType{
     string name, type, id_str;
     vector<char> industry;
     Hash id_hash;
-    ItemType(const string& itemString){
+    explicit ItemType(const string& itemString){
         vector<string> splited_itemString = split(itemString, ',');
         if(splited_itemString.size() != 4){
             cerr << itemString << endl;
@@ -156,7 +157,8 @@ struct ItemType{
         industry = move(industryParser(splited_itemString[3]));
         id_str = move(splited_itemString[0]);
     }
-    ItemType(ItemType&& other){
+    ItemType(const ItemType&) = default;
+    ItemType(ItemType&& other) noexcept {
         name = move(other.name);
         type = move(other.type);
         id_str = move(other.id_str);
@@ -253,9 +255,42 @@ linkReader(const string& fileName){
     cout << relations << endl;
     return result;
 }
-void outputSubGraph(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems
-                    , const vector<Hash>& subGraph, const tuple<string,string>& fileNames){
-    DEBUG
+void outputGraph(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems,
+                 const tuple<string,string>& nodeNameAndLinkName){
+    const auto& [nodeFileName, linkFileName] = nodeNameAndLinkName;
+    {// output Node.csv
+        ofstream f;
+        f.open(nodeFileName, ios::out);
+        if(!f.good()){
+            cerr << "try to write '" << nodeFileName << "', but failed!\n";
+            exit(1);
+        }
+        f << "id,name,type,industry\n";
+        for(const auto& ptr: nodes){
+            outputItemType(f, ptr.second) << '\n';
+        }
+        f.close();
+    }
+    {// output Link.csv
+        ofstream f;
+        f.open(linkFileName, ios::out);
+        if(!f.good()){
+            cerr << "try to write '" << linkFileName << "', but failed!\n";
+            exit(1);
+        }
+        f << "relation,source,target\n";
+        for(const auto& linkItem: linkItems){
+            f << get<0>(linkItem) << ',' << nodes.at(get<1>(linkItem)).id_str << ','
+              << nodes.at(get<2>(linkItem)).id_str << '\n';
+        }
+        f.close();
+    }
+}
+template<class T>
+[[nodiscard]] tuple<map<Hash, ItemType>, vector<LinkItemType>>
+getSubGraph(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems
+        , const T& subGraph){
+    static_assert(is_same<T, vector<Hash>>::value or is_same<T, set<Hash>>::value);
     map<Hash, vector<LinkItemType>> links;
     for(const LinkItemType& linkItem: linkItems){
         Hash from_hash = get<1>(linkItem);
@@ -267,50 +302,33 @@ void outputSubGraph(const map<Hash, ItemType>& nodes, const vector<LinkItemType>
             pos->second.emplace_back(linkItem);
         }
     }
-
-
-        {// output Node.csv
-            ofstream f;
-            const string& fileName = get<0>(fileNames);
-            f.open(fileName, ios::out);
-            if(!f.good()){
-                cerr << "try to write '" << fileName << "', but failed!\n";
-                exit(1);
-            }
-            f << "id,name,type,industry\n";
-            for(const Hash& h: subGraph){
-                const ItemType& item = nodes.at(h);
-                outputItemType(f, item) << '\n';
-            }
-            f.close();
+    map<Hash, ItemType> outNodes;
+    for(const Hash& h: subGraph){
+        const ItemType& item = nodes.at(h);
+        outNodes.insert(make_pair(h, item));
+    }
+    set<Hash> subNodes;
+    subNodes.insert(subGraph.cbegin(), subGraph.cend());
+    vector<LinkItemType> outLinks;
+    for(const Hash& h: subGraph){
+        auto pos = links.find(h);
+        if(pos == links.cend()){
+            continue;
         }
-        {
-            ofstream f;
-            const string & fileName = get<1>(fileNames);
-            f.open(fileName, ios::out);
-            if(!f.good()){
-                cerr << "try to write '" << fileName << "', but failed!\n";
-                exit(1);
+        const vector<LinkItemType>& l = pos->second;
+        for(const LinkItemType& li: l){
+            if(subNodes.find(get<2>(li)) != subNodes.cend()){
+                outLinks.emplace_back(li);
             }
-            f << "relation,source,target\n";
-            set<Hash> subNodes;
-            subNodes.insert(subGraph.cbegin(), subGraph.cend());
-            for(const Hash& h: subGraph){
-                auto pos = links.find(h);
-                if(pos == links.cend()){
-                    continue;
-                }
-                const vector<LinkItemType>& l = pos->second;
-                for(const LinkItemType& li: l){
-                    if(subNodes.find(get<2>(li)) == subNodes.cend()){
-                        continue;
-                    }
-                    f << get<0>(li) << ',' << nodes.at(get<1>(li)).id_str << ','
-                      << nodes.at(get<2>(li)).id_str << '\n';
-                }
-            }
-            f.close();
         }
+    }
+    return make_tuple(move(outNodes), move(outLinks));
+}
+void outputSubGraph(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems
+                    , const vector<Hash>& subGraph, const tuple<string,string>& nodeNameAndLinkName){
+    // nodeFileName,  linkFileName
+    auto [subNodes, subLinks] = getSubGraph(nodes, linkItems, subGraph);
+    outputGraph(subNodes, subLinks, nodeNameAndLinkName);
 }
 void outputSubGraphs(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems, const vector<vector<Hash>>& subGraphs, string folderName){
     assert(!folderName.empty());
@@ -385,4 +403,89 @@ void outputSubGraphs(const map<Hash, ItemType>& nodes, const vector<LinkItemType
         count++;
     }
 }
+
+#ifdef ENABLE_TEST
+// only for test
+bool testEqual(vector<LinkItemType> linkItems1, vector<LinkItemType> linkItems2){
+    if(linkItems1.size() != linkItems2.size()) return false;
+    sort(linkItems1.begin(), linkItems1.end());
+    sort(linkItems2.begin(), linkItems2.end());
+    for(auto ptr1=linkItems1.cbegin(), ptr2=linkItems2.cbegin();
+        ptr1 != linkItems1.cend(); ptr1++, ptr2++){
+        if(!(*ptr1 == *ptr2)) return false;
+    }
+    return true;
+}
+
+// only for test
+bool testEqual(const map<Hash, ItemType>& nodes1, const map<Hash, ItemType>& nodes2){
+    if(nodes1.size() != nodes2.size()) return false;
+    for(auto ptr1=nodes1.cbegin(), ptr2=nodes2.cbegin();
+        ptr1 != nodes1.cend(); ptr1++, ptr2++){
+        if(!(ptr1->first == ptr2->first)) return false;
+        if(!(ptr1->second == ptr2->second)) return false;
+    }
+    return true;
+}
+void outputSubGraph_forTest(const map<Hash, ItemType>& nodes, const vector<LinkItemType>& linkItems
+        , const vector<Hash>& subGraph, const tuple<string,string>& nodeNameAndLinkName){
+    // nodeFileName,  linkFileName
+    map<Hash, vector<LinkItemType>> links;
+    for(const LinkItemType& linkItem: linkItems){
+        Hash from_hash = get<1>(linkItem);
+        auto pos = links.find(from_hash);
+        if(pos == links.end()){
+            links.emplace(from_hash, vector<LinkItemType>{linkItem});
+        }
+        else{
+            pos->second.emplace_back(linkItem);
+        }
+    }
+
+
+    {// output Node.csv
+        ofstream f;
+        const string& fileName = get<0>(nodeNameAndLinkName);
+        f.open(fileName, ios::out);
+        if(!f.good()){
+            cerr << "try to write '" << fileName << "', but failed!\n";
+            exit(1);
+        }
+        f << "id,name,type,industry\n";
+        for(const Hash& h: subGraph){
+            const ItemType& item = nodes.at(h);
+            outputItemType(f, item) << '\n';
+        }
+        f.close();
+    }
+    {
+        ofstream f;
+        const string & fileName = get<1>(nodeNameAndLinkName);
+        f.open(fileName, ios::out);
+        if(!f.good()){
+            cerr << "try to write '" << fileName << "', but failed!\n";
+            exit(1);
+        }
+        f << "relation,source,target\n";
+        set<Hash> subNodes;
+        subNodes.insert(subGraph.cbegin(), subGraph.cend());
+        for(const Hash& h: subGraph){
+            auto pos = links.find(h);
+            if(pos == links.cend()){
+                continue;
+            }
+            const vector<LinkItemType>& l = pos->second;
+            for(const LinkItemType& li: l){
+                if(subNodes.find(get<2>(li)) == subNodes.cend()){
+                    continue;
+                }
+                f << get<0>(li) << ',' << nodes.at(get<1>(li)).id_str << ','
+                  << nodes.at(get<2>(li)).id_str << '\n';
+            }
+        }
+        f.close();
+    }
+}
+#endif
+
 #endif
