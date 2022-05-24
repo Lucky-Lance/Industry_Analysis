@@ -76,243 +76,32 @@
         </Widget>
       </b-col>
     </b-row>
-    <!-- <b-row>
-      <b-col xl="4" xs="12">
-        <Widget
-          title="<h6> USERBASE GROWTH </h6>"
-          close settings customHeader
-        >
-          <div class="stats-row">
-            <div class="stat-item">
-              <h6 class="name">Overall Growth</h6>
-              <p class="value">76.38%</p>
-            </div>
-            <div class="stat-item">
-              <h6 class="name">Montly</h6>
-              <p class="value">10.38%</p>
-            </div>
-            <div class="stat-item">
-              <h6 class="name">24h</h6>
-              <p class="value">3.38%</p>
-            </div>
-          </div>
-          <b-progress variant="success" :value="60"
-            :max="100" class="progress-xs" />
-          <p>
-            <small>
-              <span class="circle bg-primary text-white mr-2">
-                <i class="la la-angle-up" />
-              </span>
-            </small>
-            <span class="fw-semi-bold">&nbsp;17% higher</span>
-            &nbsp;than last month
-          </p>
-        </Widget>
-      </b-col>
-      <b-col xl="4" xs="12">
-        <Widget
-          title="<h6> TRAFFIC VALUES </h6>"
-          close settings customHeader
-        >
-          <div class="stats-row">
-            <div class="stat-item">
-              <h6 class="name">Overall Values</h6>
-              <p class="value">17 567 318</p>
-            </div>
-            <div class="stat-item">
-              <h6 class="name">Montly</h6>
-              <p class="value">55 120</p>
-            </div>
-            <div class="stat-item">
-              <h6 class="name">24h</h6>
-              <p class="value">9 695</p>
-            </div>
-          </div>
-          <b-progress variant="danger"
-            :value="60" :max="100" class="progress-xs" />
-          <p>
-            <small>
-              <span class="circle bg-primary text-white mr-2">
-                <i class="la la-angle-down" />
-              </span>
-            </small>
-            <span class="fw-semi-bold">&nbsp;8% lower</span>
-            &nbsp;than last month
-          </p>
-        </Widget>
-      </b-col>
-      <b-col xl="4" xs="12">
-        <Widget
-          title="<h6> RANDOM VALUES </h6>"
-          close settings customHeader
-        >
-          <div class="stats-row">
-            <div class="stat-item">
-              <h6 class="name fs-sm">Overcome T.</h6>
-              <p class="value">104.85%</p>
-            </div>
-            <div class="stat-item">
-              <h6 class="name fs-sm">Takeoff Angle</h6>
-              <p class="value">14.29&deg;</p>
-            </div>
-            <div class="stat-item">
-              <h6 class="name fs-sm">World Pop.</h6>
-              <p class="value">7,211M</p>
-            </div>
-          </div>
-          <b-progress variant="primary" :value="60"
-            :max="100" class="progress-xs" />
-          <p>
-            <small>
-              <span class="circle bg-primary text-white mr-2">
-                <i class="la la-plus" />
-              </span>
-            </small>
-            <span class="fw-semi-bold">&nbsp;8 734 higher</span>
-            &nbsp;than last month
-          </p>
-        </Widget>
-      </b-col>
-    </b-row> -->
     <b-row>
-      <b-col lg="6" xs="12">
+      <b-col lg="8" xs="12">
         <Widget
           title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;结构图</span></h5"
           customHeader>
           <sub-graph/>
-          <!-- <div class="widget-body p-0">
-            <div class="list-group list-group-lg">
-              <a class="list-group-item" href="#">
-                <span class="thumb-sm float-left mr">
-                  <img class="rounded-circle" src="../../assets/people/a2.jpg" alt="..." />
-                  <i class="status status-bottom bg-success" />
-                </span>
-                <div>
-                  <h6 class="m-0">Chris Gray</h6>
-                  <p class="help-block text-ellipsis m-0">
-                    Hey! What&apos;s up? So many times since we
-                  </p>
-                </div>
-              </a>
-              <a class="list-group-item" href="#">
-                <span class="thumb-sm float-left mr">
-                  <img class="rounded-circle" src="../../assets/people/a4.jpg" alt="..." />
-                  <i class="status status-bottom bg-success" />
-                </span>
-                <div>
-                  <h6 class="m-0">Jamey Brownlow</h6>
-                  <p class="help-block text-ellipsis m-0">
-                    Good news coming tonight. Seems they agreed to proceed
-                  </p>
-                </div>
-              </a>
-              <a class="list-group-item" href="#">
-                <span class="thumb-sm float-left mr">
-                  <img class="rounded-circle" src="../../assets/people/a1.jpg" alt="..." />
-                  <i class="status status-bottom bg-primary" />
-                </span>
-                <div>
-                  <h6 class="m-0">Livia Walsh</h6>
-                  <p class="help-block text-ellipsis m-0">Check my latest email plz!</p>
-                </div>
-              </a>
-              <a class="list-group-item" href="#">
-                <span class="thumb-sm float-left mr">
-                  <img class="rounded-circle" src="../../assets/people/a5.jpg" alt="..." />
-                  <i class="status status-bottom bg-danger" />
-                </span>
-                <div>
-                  <h6 class="m-0">Jaron Fitzroy</h6>
-                  <p class="help-block text-ellipsis m-0">What about summer break?</p>
-                </div>
-              </a>
-            </div>
-          </div>
-          <footer class="bg-widget mt">
-            <input type="search" class="form-control form-control-sm" placeholder="Search" />
-          </footer> -->
         </Widget>
       </b-col>
-      <!-- <b-col lg="4" xs="12">
-        <Widget
-          title="<h6> Market <span class='fw-semi-bold'>Stats</span></h6>"
-          close customHeader
-        >
-          <div class="widget-body">
-            <h3>$720 Earned</h3>
-            <p class="fs-mini text-muted mb mt-sm">
-              Target <span class="fw-semi-bold">$820</span> day earnings
-              is <span class="fw-semi-bold">96%</span> reached.
-            </p>
-          </div>
-          <div class="widget-bottom-overflow">
-            <table class="table table-striped table-sm market-stats">
-              <thead class="no-bd">
-                <tr>
-                  <th>
-                    <div class="checkbox abc-checkbox">
-                      <input
-                        type="checkbox"
-                        class="mt-0"
-                        id="checkbox210"
-                        @click="checkTable(0)"
-                        :checked="checkedArr[0]"
-                      />
-                      <label for="checkbox210" />
-                    </div>
-                  </th>
-                  <th>&nbsp;</th>
-                  <th>&nbsp;</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <div class="checkbox abc-checkbox">
-                      <input
-                        type="checkbox"
-                        class="mt-0"
-                        id="checkbox212"
-                        @click="checkTable(1)"
-                        :checked="checkedArr[1]"
-                      />
-                      <label for="checkbox212" />
-                    </div>
-                  </td>
-                  <td>HP Core i7</td>
-                  <td class="text-align-right fw-semi-bold">$346.1</td>
-                </tr>
-                <tr>
-                  <td>
-                    <div class="checkbox abc-checkbox">
-                      <input
-                        type="checkbox"
-                        class="mt-0"
-                        id="checkbox214"
-                        @click="checkTable(2)"
-                        :checked="checkedArr[2]"
-                      />
-                      <label for="checkbox214" />
-                    </div>
-                  </td>
-                  <td>Air Pro</td>
-                  <td class="text-align-right fw-semi-bold">$533.1</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="widget-body mt-xlg chart-overflow-bottom">
-            <area-chart class="area-chart" :height="100" :options="{legend: false, scales: {yAxes: [{display: false}], xAxes: [{display: false}]}}"  :chart-data="dataCollection"></area-chart>
-          </div>
-        </Widget>
-      </b-col> -->
-      <b-col lg="6" xs="12">
-        <Widget
-          title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;统计数据</span></h5" bodyClass="p-0"
-          customHeader>
-          <right-down-chart/>
+      <b-col lg="4" xs="12">
+        <b-row>
+          <b-col lg="12" xs="12">
+            <Widget
+              title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;关键路径</span></h5" bodyClass="p-0"
+              customHeader>
+              <path-table/>
+            </Widget>
+          </b-col>
+          <b-col lg="12" xs="12">
+            <Widget
+              title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;统计数据</span></h5" bodyClass="p-0"
+              customHeader>
+              <right-down-chart/>
+            </Widget>
+          </b-col>
+        </b-row>
 
-        </Widget>
       </b-col>
     </b-row>
   </div>
@@ -326,11 +115,12 @@ import AnimatedNumber from "animated-number-vue";
 import MainGraph from "./components/MainGraph/MainGraph.vue"
 import RightDownChart from "./components/RightDownChart/RightDownChart.vue"
 import SubGraph from "./components/SubGraph/SubGraph.vue"
+import PathTable from "./components/PathTable/PathTable.vue"
 
 export default {
   name: 'Analysis',
   components: {
-    Widget,  AnimatedNumber, MainGraph, RightDownChart, SubGraph
+    Widget,  AnimatedNumber, MainGraph, RightDownChart, SubGraph, PathTable
   },
   data() {
     return {
