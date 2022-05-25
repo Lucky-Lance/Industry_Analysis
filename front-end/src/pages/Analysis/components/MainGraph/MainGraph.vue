@@ -12,45 +12,17 @@
 
     export default {
         name: 'MainGraph',
-        data(){
-            return {
-                allNodes: [
-                    { id: 1, industry: "industry1", type: "Parent", pid: 0, subids: [2, 3, 4, 5], group: 0, label: "industry1" },
-                    { id: 2, industry: "industry1", type: "cert", value: "3", port: "22", pid: 1, group: 0, label: "cert" },
-                    { id: 3, industry: "industry1", type: "ip", value: "200", pid: 1, group: 0, label: "ip" },
-                    { id: 4, industry: "industry1", type: "domain", value: "10", pid: 1, group: 0, label: "domain" },
-                    { id: 5, industry: "industry1", type: "name", value: "20", pid: 1, group: 0, label: "name" },
-
-
-                    { id: 6, industry: "industry2", type: "Parent", pid: 0, subids: [7, 8, 9, 10], group: 1, label: "industry2" },
-                    { id: 7, industry: "industry2", type: "cert", value: "30", pid: 6, group: 1, label: "cert" },
-                    { id: 8, industry: "industry2", type: "ip", value: "200", pid: 6, group: 1, label: "ip" },
-                    { id: 9, industry: "industry2", type: "domain", value: "10", pid: 6, group: 1, label: "domain" },
-                    { id: 10, industry: "industry2", type: "name", value: "40", pid: 6, group: 1, label: "name" }
-                ],
-                allEdges: [
-                    { id: "1_2", from: 1, to: 2 },
-                    { id: "1_3", from: 1, to: 3 },
-                    { id: "1_4", from: 1, to: 4 },
-                    { id: "1_5", from: 1, to: 5 },
-
-                    { id: "6_7", from: 6, to: 7 },
-                    { id: "6_8", from: 6, to: 8 },
-                    { id: "6_9", from: 6, to: 9 },
-                    { id: "6_10", from: 6, to: 10 }
-                ]
-            }
-        },
+        props: ["data"],
         mounted() {
-            this.create('mynetwork');
+            this.create('mynetwork', this.data.allNodes, this.data.allEdges);
         },
         methods: {
-            create(id) {
+            create(id, allNodes, allEdges) {
                 // 获取容器
                 var container = document.getElementById(id);
                 // 将数据赋值给vis 数据格式化器
-                this.nodes = new vis.DataSet(this.allNodes);
-                this.edges = new vis.DataSet(this.allEdges);
+                this.nodes = new vis.DataSet(allNodes);
+                this.edges = new vis.DataSet(allEdges);
                 var data = {
                     nodes: this.nodes,
                     edges: this.edges
@@ -82,10 +54,10 @@
                 };
                 this.network = new vis.Network(container, data, options);
                 var initial_delele = []
-                for (let i = 0; i < this.allNodes.length; i++) {
-                    let node_id = this.allNodes[i].id;
+                for (let i = 0; i < allNodes.length; i++) {
+                    let node_id = allNodes[i].id;
                     let flag = false;
-                    var sub_nodes = this.get_directly_sub_nodes(node_id);
+                    var sub_nodes = this.get_directly_sub_nodes(node_id, allNodes);
                     if (sub_nodes.length == 0) {
                         continue;
                     }
@@ -98,7 +70,7 @@
                     if (flag == true) {
                         continue;
                     }
-                    this.remove_all_sub_nodes(node_id);
+                    this.remove_all_sub_nodes(node_id, allNodes);
                     initial_delele.push(node_id);
                     for (let j = 0; j < sub_nodes.length; j++) {
                         initial_delele.push(sub_nodes[j]);
@@ -106,19 +78,19 @@
                 }
 
                 let hoverNode = (properties) => {
-                    var hoveNodeList = this.getNode(properties.node);
+                    var hoveNodeList = this.getNode(properties.node, allNodes);
                     // console.log('hoveNodeList',hoveNodeList);
                     var deviceType = hoveNodeList.type;
 
                     if (deviceType == "Parent") {
                         let $ul = "<ul>"
-                            + "<li>Industry:" + hoveNodeList.industry + "</li>"
+                            + "<li>" + hoveNodeList.industry + "</li>"
                             + "</ul>";
                         $("#divHoverNode").append($ul);
                     } else {
                         let $ul = "<ul>"
                             // +"<li><img src=' "+imgPathSrc+" ' width='30px' height='25px'><span> 设备类型:"+hoveNodeList.name+" </span> </li>"
-                            + "<li>Industry:" + hoveNodeList.industry + "</li>"
+                            + "<li>" + hoveNodeList.industry + "</li>"
                             + "<li>Type:" + hoveNodeList.type + "</li>"
                             + "<li>Count:" + hoveNodeList.value + "</li>"
                             + "</ul>";
@@ -148,7 +120,7 @@
                 }
 
                 let click = (properties) => {
-                    var clickNodeList = this.getNode(properties.nodes[0]);
+                    var clickNodeList = this.getNode(properties.nodes[0], allNodes);
                     // console.log('clickNodeList',clickNodeList);
                     if (typeof (clickNodeList) == "undefined") {
                         $('#menuOperation').hide();
@@ -165,7 +137,7 @@
                 let doubleClick = (params) => {
                     if (params.nodes.length != 0) {//确定为节点双击事件
                         var click_node_id = params.nodes[0];
-                        this.remove_all_sub_nodes(click_node_id);
+                        this.remove_all_sub_nodes(click_node_id, allNodes);
                     }
                 }
 
@@ -192,35 +164,35 @@
                 //todo 双击时折叠和展开
                 this.network.on("doubleClick", doubleClick);
             },
-            getNode(option) {
-                for (var i = 0; i < this.allNodes.length; i++) {
-                    if (option == this.allNodes[i].id) {
-                        return this.allNodes[i];
+            getNode(option, allNodes) {
+                for (var i = 0; i < allNodes.length; i++) {
+                    if (option == allNodes[i].id) {
+                        return allNodes[i];
                     }
                 }
             },
             // todo 删除下级所有节点
-            remove_all_sub_nodes(node_id) {
-                var sub_nodes = this.get_directly_sub_nodes(node_id);
+            remove_all_sub_nodes(node_id, allNodes) {
+                var sub_nodes = this.get_directly_sub_nodes(node_id, allNodes);
                 if (sub_nodes.length == 0) {//当前点击的为叶子节点
                     //判断是否有下级节点
-                    if (typeof (this.allNodes[node_id - 1]['subids']) != 'undefined') {
+                    if (typeof (allNodes[node_id - 1]['subids']) != 'undefined') {
                         let worker = (index, item) => {
-                            this.nodes.add(this.allNodes[item - 1]);
+                            this.nodes.add(allNodes[item - 1]);
                             this.edges.add({ id: node_id + '_' + item, from: node_id, to: item });
                         }
-                        $.each(this.allNodes[node_id - 1]['subids'], worker);
+                        $.each(allNodes[node_id - 1]['subids'], worker);
                     } else {
                         // alert('当前为叶子节点');
                     }
                 } else {
                     let worker = (index, item) => {
-                        var sub_sub_nodes = this.get_directly_sub_nodes(item);
+                        var sub_sub_nodes = this.get_directly_sub_nodes(item, allNodes);
                         if (sub_sub_nodes.length == 0) {
                             this.nodes.remove({ id: item });
                             this.edges.remove({ id: node_id + '_' + item });
                         } else {
-                            this.remove_all_sub_nodes(item);
+                            this.remove_all_sub_nodes(item, allNodes);
                         }
                         this.nodes.remove({ id: item });
                         this.edges.remove({ id: node_id + '_' + item });
@@ -229,11 +201,11 @@
                 }
             },
             //todo 获取某节点直属下级节点
-            get_directly_sub_nodes(node_id) {
+            get_directly_sub_nodes(node_id, allNodes) {
                 var return_nodes = [];
                 var connectedNodes =this.network.getConnectedNodes(node_id);//获取所有连接节点
                 let worker = (index, item) => {
-                    if (item != this.allNodes[node_id - 1]['pid']) {//当前节点的父节点 ，不操作
+                    if (item != allNodes[node_id - 1]['pid']) {//当前节点的父节点 ，不操作
                         return_nodes.push(item);
                     }
                 }

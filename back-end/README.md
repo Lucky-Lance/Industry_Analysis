@@ -4,7 +4,7 @@
 - 安装`FastAPI`和`Uvicorn`
   ```
   pip install fastapi
-  pip install unicorn[standard]
+  pip install uvicorn[standard]
   ```
 
 ### 启动

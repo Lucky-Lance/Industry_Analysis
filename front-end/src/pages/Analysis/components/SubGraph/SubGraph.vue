@@ -2,30 +2,6 @@
     <v-network-graph v-model:selected-nodes="selectedNodes" :nodes="data.nodes" :edges="data.edges"
         :layouts="data.layouts" :paths="data.paths" :configs="configs" :event-handlers="eventHandlers">
 
-        <!-- Draw a rectangle with a red background -->
-        <defs>
-            <component :is="'style'">
-                <!-- prettier-ignore -->
-                .point { fill: #ff000080; }
-                .coords { font-size: 11px; fill: #444; }
-                .lt { text-anchor: start; dominant-baseline: hanging; transform: translate(5px, 5px); }
-                .rt { text-anchor: end; dominant-baseline: hanging; transform: translate(-5px, 5px); }
-                .lb { text-anchor: start; dominant-baseline: ideographic; transform: translate(5px, -5px); }
-                .rb { text-anchor: end; dominant-baseline: ideographic; transform: translate(-5px, -5px); }
-            </component>
-        </defs>
-        <template #redZone>
-            <rect x="50" y="50" width="400" height="200" fill="#ff000030" />
-            <circle cx="50" cy="50" r="5" class="point" />
-            <circle cx="450" cy="50" r="5" class="point" />
-            <circle cx="50" cy="250" r="5" class="point" />
-            <circle cx="450" cy="250" r="5" class="point" />
-            <text x="50" y="50" class="coords lt">(50, 50)</text>
-            <text x="450" y="50" class="coords rt">(450, 50)</text>
-            <text x="50" y="250" class="coords lb">(50, 450)</text>
-            <text x="450" y="250" class="coords rb">(450, 450)</text>
-        </template>
-
         <template #edge-label="{ edge, ...slotProps }">
             <v-edge-label :text="edge.label" :font-size="18" fill="#ffffff" align="center" vertical-align="above"
                 v-bind="slotProps" />
@@ -54,24 +30,25 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import * as vNG from "v-network-graph"
-import data from "./data"
 import {
     ForceLayout
 } from "v-network-graph/lib/force-layout"
- 
+
+const props = defineProps(["data"])
+
 const selectedNodes = ref([])
 
 const eventHandlers = {
     "node:click": ({ node }) => {
         // toggle
-        data.nodes[node].color = "gray";
+        props.data.nodes[node].color = "gray";
         for (let i = 0; i < 2; ++i)
-            if (data.pathNodes[i].has(node)) {
+            if (props.data.pathNodes[i].has(node)) {
                 let pathName = "path" + (i + 1).toString();
-                console.log(pathName, data.paths[pathName]);
-                data.paths[pathName].active ^= 1;
+                console.log(pathName, props.data.paths[pathName]);
+                props.data.paths[pathName].active ^= 1;
             }
         // data.nodes[node].active = !data.nodes[node].active
     },
@@ -178,3 +155,4 @@ const configs = vNG.defineConfigs({
     },
 })
 </script>
+

@@ -3,13 +3,13 @@
     margin: 50px auto;
 } */
 
-path {
+/* path {
     stroke: #fff;
-}
+} */
 
-path:hover {
+/* path:hover {
     opacity: 0.9;
-}
+} */
 
 rect:hover {
     fill: blue;
@@ -34,9 +34,9 @@ rect:hover {
     shape-rendering: crispEdges;
 }
 
-.x.axis path {
+/* .x.axis path {
     display: none;
-}
+} */
 
 .legend {
     margin-bottom: 76px;
