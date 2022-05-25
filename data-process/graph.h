@@ -110,21 +110,22 @@ public:
                 reaches[nodeID] = 0;
             }
             {
-                auto depthVec = getDepth(depthInput);
+                const auto depthVec = getDepth(depthInput);
                 assert(depthVec.size() == numNodes());
                 // 0: top,  1: mid, 2: bottom
                 for (uint32_t nodeID = 0; nodeID < numNodes(); nodeID++) {
+                    auto degree = edges.at(nodeID).size();
                     if (reaches[nodeID] == UNMATCHED) {
-                        if (statistic[nodeID][0] == 1) {
+                        if (statistic.at(degree)[0] == 1) {
                             reaches[nodeID] = 2;
-                        } else if (depthVec[nodeID] <= 2) {
+                        } else if (depthVec.at(nodeID) < 2) {
                             reaches[nodeID] = 1;
                         } else {
                             reaches[nodeID] = 2;
                         }
                     }
 //                    cout << 5 + reaches[nodeID] << endl;
-                    statistic[nodeID][5 + reaches[nodeID]] += 1;
+                    statistic.at(degree)[5 + reaches[nodeID]] += 1;
                 }
             }
         }
@@ -439,6 +440,7 @@ public:
                 auto edge = edges.at(nodeID);
                 for(const auto& n: edge){
                     bfsQueue.emplace(make_tuple(n.to, -n.weight+ 10 * mapped_to_black.at(n.to).empty() + (int)25*depth[n.to]));
+//                    bfsQueue.emplace(make_tuple(n.to, -n.weight + (int)25*depth[n.to]));
                 }
             }
         }

@@ -59,7 +59,8 @@ void group1(bool buildFromScratch){
     }
     DEBUG
     // 400
-    for(auto maxNodes: vector<int>{30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 350,400, 500,600}){
+//    for(auto maxNodes: vector<int>{30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 350,400, 500,600}){
+        for(auto maxNodes: vector<int>{1000, 1500, 2000, 2500,3000,3500, 4000}){
         ofstream f;
         string fileName = "group1-" + to_string(maxNodes) + ".json";
         f.open(outputPath/fileName, ios::out);

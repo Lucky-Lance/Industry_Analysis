@@ -1,0 +1,70 @@
+[
+	{
+		"Count" : 108,
+		"State" : "0 - 1",
+		"area" : 
+		{
+			"Bot" : 52,
+			"Mid" : 56,
+			"Top" : 0
+		},
+		"freq" : 
+		{
+			"Cert" : 0,
+			"Domain" : 52,
+			"IP" : 56,
+			"Other" : 0
+		}
+	},
+	{
+		"Count" : 84,
+		"State" : "2 - 2",
+		"area" : 
+		{
+			"Bot" : 80,
+			"Mid" : 4,
+			"Top" : 0
+		},
+		"freq" : 
+		{
+			"Cert" : 0,
+			"Domain" : 80,
+			"IP" : 4,
+			"Other" : 0
+		}
+	},
+	{
+		"Count" : 163,
+		"State" : "3 - 3",
+		"area" : 
+		{
+			"Bot" : 159,
+			"Mid" : 4,
+			"Top" : 0
+		},
+		"freq" : 
+		{
+			"Cert" : 0,
+			"Domain" : 159,
+			"IP" : 4,
+			"Other" : 0
+		}
+	},
+	{
+		"Count" : 45,
+		"State" : "4 - 97",
+		"area" : 
+		{
+			"Bot" : 24,
+			"Mid" : 20,
+			"Top" : 1
+		},
+		"freq" : 
+		{
+			"Cert" : 0,
+			"Domain" : 11,
+			"IP" : 34,
+			"Other" : 0
+		}
+	}
+]

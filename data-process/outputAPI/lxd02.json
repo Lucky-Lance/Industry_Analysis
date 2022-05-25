@@ -1,0 +1,53 @@
+[
+	{
+		"Count" : 386,
+		"State" : "0 - 1",
+		"area" : 
+		{
+			"Bot" : 0,
+			"Mid" : 385,
+			"Top" : 1
+		},
+		"freq" : 
+		{
+			"Cert" : 0,
+			"Domain" : 386,
+			"IP" : 0,
+			"Other" : 0
+		}
+	},
+	{
+		"Count" : 403,
+		"State" : "2 - 2",
+		"area" : 
+		{
+			"Bot" : 0,
+			"Mid" : 402,
+			"Top" : 1
+		},
+		"freq" : 
+		{
+			"Cert" : 0,
+			"Domain" : 403,
+			"IP" : 0,
+			"Other" : 0
+		}
+	},
+	{
+		"Count" : 11,
+		"State" : "3 - 800",
+		"area" : 
+		{
+			"Bot" : 2,
+			"Mid" : 8,
+			"Top" : 1
+		},
+		"freq" : 
+		{
+			"Cert" : 1,
+			"Domain" : 10,
+			"IP" : 0,
+			"Other" : 0
+		}
+	}
+]

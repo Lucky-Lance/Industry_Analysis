@@ -60,8 +60,46 @@
     Json::StreamWriterBuilder builder;
     return Json::writeString(builder, root_json);
 }
-[[nodiscard]]string graphToJson_lxd(){
-
+[[nodiscard]]string graphToJson_lxd(const vector<array<uint32_t, 8>>& statistics){
+    uint32_t totalCount = 0;
+    for(const auto s: statistics){
+        totalCount += s.at(0);
+    }
+    Json::Value freqData = Json::ValueType::arrayValue;
+    uint32_t sizeRemain = 0, prevDegree = 0;
+    array<uint32_t, 8> s = {};
+    for(uint32_t degree = 0; degree < statistics.size(); degree++){
+        sizeRemain += statistics.at(degree).at(0);
+        for(size_t i=0; i<s.size(); i++){
+            s.at(i) += statistics.at(degree).at(i);
+        }
+        if(sizeRemain > totalCount / 5 || degree + 1 == statistics.size()){
+            Json::Value freqItem = Json::ValueType::objectValue;
+            freqItem["State"] = to_string(prevDegree) + " - " + to_string(degree);
+            freqItem["Count"] = sizeRemain;
+            {
+                Json::Value freq = Json::ValueType::objectValue;
+                freq["Domain"] = s[1];
+                freq["IP"] = s[2];
+                freq["Cert"] = s[3];
+                freq["Other"] = s[4];
+                freqItem["freq"] = freq;
+            }
+            {
+                Json::Value area = Json::ValueType::objectValue;
+                area["Top"] = s[5];
+                area["Mid"] = s[6];
+                area["Bot"] = s[7];
+                freqItem["area"] = area;
+            }
+            freqData.append(freqItem);
+            prevDegree = degree+1;
+            sizeRemain = 0;
+            s = {};
+        }
+    }
+    Json::StreamWriterBuilder builder;
+    return Json::writeString(builder, freqData);
 }
 [[nodiscard]]string graphToJson_cwh(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes){
     // string relation; ItemType from, to;
