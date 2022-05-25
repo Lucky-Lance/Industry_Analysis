@@ -3,8 +3,7 @@
         :layouts="data.layouts" :paths="data.paths" :configs="configs" :event-handlers="eventHandlers">
 
         <template #edge-label="{ edge, ...slotProps }">
-            <v-edge-label :text="edge.label" :font-size="18" fill="#ffffff" align="center" vertical-align="above"
-                v-bind="slotProps" />
+            <v-edge-label :text="edge.label" align="center" vertical-align="above" v-bind="slotProps" />
         </template>
 
         <!-- Use CSS to define references to external fonts.
@@ -90,32 +89,15 @@ const configs = vNG.defineConfigs({
         },
         label: {
             visible: true,
-            fontFamily: undefined,
+            fontFamily: "gillsans-bold",
             fontSize: 12,
             lineHeight: 1.1,
-            color: "#000000",
+            color: "#ffffff",
             margin: 4,
             direction: "south",
             text: "name",
         },
     },
-    // view: {
-    //     grid: {
-    //         visible: true,
-    //         interval: 10,
-    //         thickIncrements: 5,
-    //         line: {
-    //             color: "#e0e0e0",
-    //             width: 1,
-    //             dasharray: 1,
-    //         },
-    //         thick: {
-    //             color: "#cccccc",
-    //             width: 1,
-    //             dasharray: 0,
-    //         },
-    //     }
-    // },
     edge: {
         gap: 12,
         normal: {
@@ -125,6 +107,12 @@ const configs = vNG.defineConfigs({
         },
         type: "curve",
         margin: 2,
+        label: {
+            fontFamily: "gillsans-bold",
+            fontSize: 16,
+            lineHeight: 1.1,
+            color: "#ffffff",
+        },
         marker: {
             source: {
                 type: "none",

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pandas import DataFrame
 from pydantic import BaseModel
+import json, uvicorn
 
 from typing import Union, List, Mapping
 
@@ -10,26 +11,32 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
                    allow_headers=["*"],)
 
-class Dataframe(BaseModel):
-    name: str
-    content: Union[List[int], None] = None
+mainGraphData = json.load(open("./data/mainGraphData.json", "r"))
+subGraphData = json.load(open("./data/subGraphData.json", "r"))
+tableData = json.load(open("./data/tableData.json", "r"))
+rightDownCharData = json.load(open("./data/rightDownCharData.json", "r"))
 
-mini_database: Mapping[int, Dataframe] = {}
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/items/{id}")
-def read_data(id: int):
-    d = DataFrame()
-    if id in mini_database:
-        d = mini_database[id]
-        return {"id": id, "name": d.name, "content": d.content}
-    else:
-        return {"id": "N/A", "name": "default", "content": []}
+@app.get("/mainGraphData")
+def read_mainGraphData():
+    return mainGraphData
+    
+@app.get("/subGraphData/{id}")
+def read_subGraphData(id: int):
+    return subGraphData[str(id)]
 
-@app.put("/items/{id}")
-def update_data(id: int, frame: Dataframe):
-    mini_database[id] = frame
-    return { "id": id, "name": frame.name}
+@app.get("/tableData/{id}")
+def read_tableData(id: int):
+    return tableData[str(id)]
+
+@app.get("/rightDownCharData/{id}")
+def read_rightDownCharData(id: int):
+    return rightDownCharData[str(id)]
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="192.168.1.107", port=8000)

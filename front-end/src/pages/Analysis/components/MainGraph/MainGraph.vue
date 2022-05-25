@@ -136,6 +136,7 @@
 
                 let doubleClick = (params) => {
                     if (params.nodes.length != 0) {//确定为节点双击事件
+                        this.$emit("choose_graph_id", 1);
                         var click_node_id = params.nodes[0];
                         this.remove_all_sub_nodes(click_node_id, allNodes);
                     }
@@ -213,6 +214,11 @@
                 return return_nodes;
             }
         },
+        watch: {
+            data(newData, oldData) {
+                this.create('mynetwork', newData.allNodes, newData.allEdges);
+            }
+        }
     }
 
 

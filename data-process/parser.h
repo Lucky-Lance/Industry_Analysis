@@ -2,6 +2,7 @@
 #define _PARSER_H_
 #include <iostream>
 #include <fstream>
+#include <array>
 #include <vector>
 #include <map>
 #include <optional>

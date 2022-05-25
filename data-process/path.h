@@ -11,7 +11,7 @@ void initPath(){
 //    DPath = filesystem::path("/media/ftc/DATA");
     DPath = filesystem::path("/mnt/d");
 #endif
-    rootPath = DPath / ("ftc/µÚÁùÑ§ÆÚ/¿ÉÊÓ»¯/×÷Òµ/´ó×÷Òµ/ChinaVis Data Challenge 2022-mini challenge 1-Dataset/data-process");
+    rootPath = DPath / ("ftc/ç¬¬å…­å­¦æœŸ/å¯è§†åŒ–/ä½œä¸š/å¤§ä½œä¸š/ChinaVis Data Challenge 2022-mini challenge 1-Dataset/data-process");
     outputPath = rootPath / "output";
     tmpPath = rootPath / "tmp";
     cout << "rootPath = " << rootPath << endl;

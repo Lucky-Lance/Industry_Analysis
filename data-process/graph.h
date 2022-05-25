@@ -51,7 +51,7 @@ const static map<string, NodeAssetType> stringToAssetType = {
         {"Domain", DOMAIN_ASS}, {"IP", IP_ASS},
         {"Cert", CERT_ASS}, {"Whois_Name", OTHERS_ASS},
         {"Whois_Phone", OTHERS_ASS}, {"Whois_Email", OTHERS_ASS},
-        {"IP_C", OTHERS_ASS}, {"ASN", OTHERS_ASS},
+        {"IP_C", IP_ASS}, {"ASN", OTHERS_ASS},
 };
 const static map<NodeAssetType, string> AssetTypeToString = {
         {DOMAIN_ASS, "Domain"}, {IP_ASS, "IP"},
@@ -78,6 +78,57 @@ public:
     }
     [[nodiscard]]size_t numEdges() const {
         return edges.size();
+    }
+
+    [[nodiscard]]vector< array<uint32_t,8> > getStatistics(const vector<Hash>centers) const {
+        // array:
+        // [0] count; [1] domain; [2] ip; [3] cert;
+        // [4] others; [5] top; [6] mid; [7] bottom;
+        vector<array<uint32_t,8>> statistic;
+        for(uint32_t nodeID=0; nodeID<numNodes(); nodeID++){
+            auto degree = edges.at(nodeID).size();
+            if(degree >= statistic.size()){
+                statistic.resize(degree+1, {0,0,0,0,0,0,0,0});
+            }
+            statistic[degree][0] += 1;
+            switch(mapped_to_assetType.at(nodeID)){
+                case DOMAIN_ASS: statistic[degree][1] += 1; break;
+                case IP_ASS: statistic[degree][2] += 1; break;
+                case CERT_ASS: statistic[degree][3] += 1; break;
+                case OTHERS_ASS: statistic[degree][4] += 1; break;
+                default: assert(0);
+            }
+        }
+        vector<uint32_t> reaches;
+        reaches.resize(numNodes(), UNMATCHED);
+        {// get top, mid & bottom
+            vector<tuple<NodeIdType, DepthType>> depthInput;
+            depthInput.reserve(centers.size());
+            for (const auto& nodeHash: centers) {
+                auto nodeID = raw_to_mapped.at(nodeHash);
+                depthInput.push_back(make_tuple(nodeID, 0U));
+                reaches[nodeID] = 0;
+            }
+            {
+                auto depthVec = getDepth(depthInput);
+                assert(depthVec.size() == numNodes());
+                // 0: top,  1: mid, 2: bottom
+                for (uint32_t nodeID = 0; nodeID < numNodes(); nodeID++) {
+                    if (reaches[nodeID] == UNMATCHED) {
+                        if (statistic[nodeID][0] == 1) {
+                            reaches[nodeID] = 2;
+                        } else if (depthVec[nodeID] <= 2) {
+                            reaches[nodeID] = 1;
+                        } else {
+                            reaches[nodeID] = 2;
+                        }
+                    }
+//                    cout << 5 + reaches[nodeID] << endl;
+                    statistic[nodeID][5 + reaches[nodeID]] += 1;
+                }
+            }
+        }
+        return statistic;
     }
     void insert(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes){
         size_t prevSize = numNodes();

@@ -60,6 +60,9 @@
     Json::StreamWriterBuilder builder;
     return Json::writeString(builder, root_json);
 }
+[[nodiscard]]string graphToJson_lxd(){
+
+}
 [[nodiscard]]string graphToJson_cwh(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes){
     // string relation; ItemType from, to;
     map<Hash, uint32_t> raw_to_mapped;

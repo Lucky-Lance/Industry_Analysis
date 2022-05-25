@@ -13,6 +13,17 @@ export default {
     },
     methods: {
         dashboard(id, fData, type2field, field2type) {
+
+            var mySvgs = document.querySelectorAll(id + ' svg')
+            for(let i = 0; i < mySvgs.length; i++){
+                mySvgs[i].remove();
+            }
+            
+            var mySvgs = document.querySelectorAll(id + ' table')
+            for(let i = 0; i < mySvgs.length; i++){
+                mySvgs[i].remove();
+            }
+           
             var barColor = 'steelblue';
             function segColor(c) { return { Domain: "#807dba", IP: "#e08214", Cert: "#41ab5d", ASN: "#E80000", Top: "#807dba", Mid: "#e08214", Bot: "#41ab5d" }[c]; }
 
@@ -27,7 +38,7 @@ export default {
                     hGDim.h = 300 - hGDim.t - hGDim.b;
 
                 //create svg for histogram.
-                    
+
                 var hGsvg = d3.select(id).append("svg")
                     // .attr("preserveAspectRatio", "xMidYMid meet")
                     // .attr("viewBox", "0 0 "+hGDim.w + hGDim.l + hGDim.r+" "+hGDim.h + hGDim.t + hGDim.b)
@@ -346,6 +357,11 @@ export default {
                 leg1 = legend_aF(aF);  // create the legend.
         }
     },
+    watch: {
+        data(newData, oldData) {
+            this.dashboard('#dashboard', newData.freqData, newData.type2field, newData.field2type);
+        }
+    }
 }
 
 </script>
