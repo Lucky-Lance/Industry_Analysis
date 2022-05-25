@@ -7,6 +7,7 @@
 #include <optional>
 #include <tuple>
 #include <cassert>
+#include <sstream>
 #include <set>
 #include <filesystem>
 #include <algorithm>
@@ -41,6 +42,10 @@ optional<char> stringToChar(const string& str){
     for(int i=0; i<str.size(); i++){
         if(str[i] == '\''){
             assert(i+2 < str.size());
+            if(str[i+2] != '\''){
+                DEBUG;
+                throw runtime_error(str);
+            }
             assert(str[i+2] == '\'');
             return str[i+1];
         }
@@ -122,6 +127,7 @@ struct Hash{
         if(c>='0' && c<='9') return c-'0';
         if(c>='a' && c<='z') return c-'a'+'9'-'0'+1;
         assert(false);
+        return 0;
     }
     bool operator==(const Hash& other) const {
         return hash1 == other.hash1 && hash2 == other.hash2;

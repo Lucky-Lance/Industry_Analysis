@@ -70,7 +70,9 @@ public:
 public:
     Graph() = default;
     Graph(const Graph&) = delete;
-
+    [[nodiscard]] uint32_t hashToMapped(Hash h) const {
+        return raw_to_mapped.at(h);
+    }
     [[nodiscard]]size_t numNodes() const {
         return raw_node.size();
     }
@@ -365,6 +367,61 @@ public:
         return subGraphs;
     }
 public:
+    [[nodiscard]] vector<Hash> divideSubGraphByCenters(const vector<Hash>& centers, int maxNodes) const {
+        vector<tuple<NodeIdType, DepthType>> depthInput;
+        depthInput.reserve(centers.size());
+        auto cmp = [](const tuple<uint32_t, int>&a, const tuple<uint32_t, int>&b)->bool{
+            return get<1>(a) > get<1>(b);
+        };
+        priority_queue<tuple<uint32_t, int>, vector<tuple<uint32_t, int>>, decltype(cmp)> bfsQueue(cmp);
+        for(const auto& center: centers){
+            uint32_t mappedId = raw_to_mapped.at(center);
+            depthInput.emplace_back(make_tuple(mappedId, 0U));
+            bfsQueue.emplace(make_tuple(mappedId, -100000));
+        }
+        auto depth = getDepth(depthInput);
+        set<uint32_t> resultSet;
+        while (resultSet.size() < maxNodes){
+            auto [nodeID, _] = bfsQueue.top();
+            bfsQueue.pop();
+            if(resultSet.insert(nodeID).second){
+                auto edge = edges.at(nodeID);
+                for(const auto& n: edge){
+                    bfsQueue.emplace(make_tuple(n.to, -n.weight+ 10 * mapped_to_black.at(n.to).empty() + (int)25*depth[n.to]));
+                }
+            }
+        }
+        vector<Hash> result;
+        result.reserve(resultSet.size());
+        for(auto nodeID: resultSet){
+            result.emplace_back(mapped_to_raw.at(nodeID));
+        }
+        return result;
+    }
+    [[nodiscard]] vector<Hash> divideSubGraphByDepth(const vector<Hash>& centers, int maxDepth) const {
+        vector<tuple<NodeIdType, DepthType>> depthInput;
+        depthInput.reserve(centers.size());
+        for(const auto& center: centers){
+            uint32_t mappedId = raw_to_mapped.at(center);
+            depthInput.emplace_back(make_tuple(mappedId, 0U));
+        }
+        auto depth = getDepth(depthInput);
+        auto cmp = [](const tuple<NodeIdType, DepthType>& a, const tuple<NodeIdType, DepthType>& b)->bool{
+            return get<1>(a) > get<1>(b);
+        };
+//        priority_queue<tuple<NodeIdType, DepthType>, vector<tuple<NodeIdType, DepthType>>, decltype(cmp)>
+//                pq(cmp);
+//        for(uint32_t nodeID = 0; nodeID<depth.size(); nodeID++){
+//            pq.emplace(make_pair(nodeID, depth[nodeID]));
+//        }
+        vector<Hash> result;
+        for(uint32_t nodeID = 0; nodeID<depth.size(); nodeID++){
+            if(depth[nodeID] <= maxDepth){
+                result.emplace_back(mapped_to_raw.at(nodeID));
+            }
+        }
+        return result;
+    }
 	[[nodiscard]] vector<vector<Hash>> divideSubGraph() const {
         vector<vector<uint32_t>> dfsGroup;
         vector<uint32_t> dfsVers;

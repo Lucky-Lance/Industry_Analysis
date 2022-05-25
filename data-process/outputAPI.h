@@ -4,7 +4,8 @@
 #include <regex>
 #include <json/json.h>
 
-[[nodiscard]]string graphToJson_echarts(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes){
+[[nodiscard]]string graphToJson_echarts(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes,
+    const set<Hash>& centers){
     // string relation; ItemType from, to;
     map<Hash, uint32_t> raw_to_mapped;
     Json::Value root_json = Json::ValueType::objectValue;
@@ -16,12 +17,17 @@
         const Hash h = iter->first;
         raw_to_mapped[h] = count;
         Json::Value node_json;
-        node_json["name"] = to_string(count);
+        node_json["name"] = "["+iter->second.type+"]: "+iter->second.name;
         node_json["value"] = 1;
-        if(iter->second.industry.empty()) {
+        if(centers.find(h) != centers.cend()){
+            // root
             node_json["category"] = 0;
-        } else{
+        } else if(iter->second.industry.empty()) {
+            // normal
             node_json["category"] = 1;
+        } else{
+            // black
+            node_json["category"] = 2;
         }
         nodes_json.append(move(node_json));
         count++;
@@ -36,7 +42,7 @@
         links_json.append(move(link_json));
     }
     {// categories
-        vector<string> cats = {"normal", "black"};
+        vector<string> cats = {"root", "normal", "black"};
         for(const auto &cat_name : cats){
             Json::Value cat = Json::ValueType::objectValue;
             Json::Value empty = Json::ValueType::objectValue;
