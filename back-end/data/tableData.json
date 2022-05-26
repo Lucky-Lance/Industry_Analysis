@@ -3,25 +3,25 @@
     "columns": [{
             "field": "Path ID",
             "key": "a",
-            "title": "Path ID",
+            "title": "路径 ID",
             "align": "center"
         },
         {
             "field": "Start Node",
             "key": "b",
-            "title": "Start Node",
+            "title": "起始节点",
             "align": "center"
         },
         {
             "field": "End Node",
             "key": "c",
-            "title": "End Node",
+            "title": "终止节点",
             "align": "center"
         },
         {
             "field": "Length",
             "key": "d",
-            "title": "Length",
+            "title": "长度",
             "align": "center"
         }
     ],

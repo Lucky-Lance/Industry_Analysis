@@ -15,8 +15,9 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
 
 mainGraphData = json.load(open("./data/mainGraphData.json", "r"))
 subGraphData = json.load(open("./data/subGraphData.json", "r"))
-tableData = json.load(open("./data/tableData.json", "r"))
+tableData = json.load(open("./data/tableData.json", "r", encoding='utf=8'))
 rightDownCharData = json.load(open("./data/rightDownCharData.json", "r"))
+abstractData = json.load(open("./data/abstractData.json", "r", encoding='utf=8'))
 
 
 @app.get("/")
@@ -50,6 +51,10 @@ def read_tableData(id: int):
 @app.get("/rightDownCharData/{id}")
 def read_rightDownCharData(id: int):
     return rightDownCharData[str(id)]
+
+@app.get("/abstractData/{id}")
+def read_abstractData(id: int):
+    return abstractData[str(id)]
 
 
 if __name__ == "__main__":

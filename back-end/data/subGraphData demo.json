@@ -23,7 +23,7 @@
                 "name": "N4",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             },
             "node5": {
                 "name": "N5",
@@ -41,25 +41,25 @@
                 "name": "N7",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             },
             "node8": {
                 "name": "N8",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             },
             "node9": {
                 "name": "N9",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             },
             "node10": {
                 "name": "N10",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             }
         },
         "edges": {
@@ -76,21 +76,21 @@
                 "target": "node2",
                 "label": "3-2",
                 "width": 3,
-                "color": "skyblue"
+                "color": "#ff6f00"
             },
             "edge3": {
                 "source": "node2",
                 "target": "node4",
                 "label": "2-4",
                 "width": 3,
-                "color": "skyblue"
+                "color": "#ff6f00"
             },
             "edge4": {
                 "source": "node2",
                 "target": "node4",
                 "label": "2-4",
                 "width": 3,
-                "color": "skyblue"
+                "color": "#ff6f00"
             },
             "edge5": {
                 "source": "node4",
@@ -137,7 +137,7 @@
                 "target": "node10",
                 "label": "6-10",
                 "width": 3,
-                "color": "skyblue"
+                "color": "#ff6f00"
             }
         },
         "paths": {
@@ -161,55 +161,98 @@
                 "node7"
             ]
         ],
-        "layouts": {},
+        "layouts": {
+            "nodes": {
+                "node1": {
+                    "x": 0,
+                    "y": 0
+                },
+                "node2": {
+                    "x": 80,
+                    "y": 80
+                },
+                "node3": {
+                    "x": 160,
+                    "y": 0
+                },
+                "node4": {
+                    "x": 240,
+                    "y": 80
+                },
+                "node5": {
+                    "x": 320,
+                    "y": 0
+                },
+                "node6": {
+                    "x": 100,
+                    "y": 100
+                },
+                "node7": {
+                    "x": 80,
+                    "y": 20
+                },
+                "node8": {
+                    "x": 160,
+                    "y": 40
+                },
+                "node9": {
+                    "x": 240,
+                    "y": 40
+                },
+                "node10": {
+                    "x": 320,
+                    "y": 50
+                }
+            }
+        },
         "nodesProp": {
             "node1": {
-                "degree": "30",
+                "degree": 30,
                 "type": "Domain",
                 "pos": "Top"
             },
             "node2": {
-                "degree": "80",
+                "degree": 80,
                 "type": "Domain",
                 "pos": "Top"
             },
             "node3": {
-                "degree": "130",
+                "degree": 130,
                 "type": "Domain",
                 "pos": "Top"
             },
             "node4": {
-                "degree": "180",
+                "degree": 180,
                 "type": "IP",
                 "pos": "Mid"
             },
             "node5": {
-                "degree": "230",
+                "degree": 230,
                 "type": "IP",
                 "pos": "Mid"
             },
             "node6": {
-                "degree": "280",
+                "degree": 280,
                 "type": "IP",
                 "pos": "Mid"
             },
             "node7": {
-                "degree": "330",
+                "degree": 330,
                 "type": "Cert",
                 "pos": "Bot"
             },
             "node8": {
-                "degree": "380",
+                "degree": 380,
                 "type": "Cert",
                 "pos": "Bot"
             },
             "node9": {
-                "degree": "430",
+                "degree": 430,
                 "type": "Cert",
                 "pos": "Bot"
             },
             "node10": {
-                "degree": "480",
+                "degree": 480,
                 "type": "Cert",
                 "pos": "Bot"
             }
@@ -239,7 +282,7 @@
                 "name": "G4",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             },
             "node5": {
                 "name": "G5",
@@ -257,25 +300,25 @@
                 "name": "G7",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             },
             "node8": {
                 "name": "G8",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             },
             "node9": {
                 "name": "G9",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             },
             "node10": {
                 "name": "G10",
                 "icon": "&#xe2bd",
                 "size": 20,
-                "color": "lightskyblue"
+                "color": "#ff6f00"
             }
         },
         "edges": {
@@ -292,21 +335,21 @@
                 "target": "node2",
                 "label": "3-2",
                 "width": 3,
-                "color": "skyblue"
+                "color": "#ff6f00"
             },
             "edge3": {
                 "source": "node2",
                 "target": "node4",
                 "label": "2-4",
                 "width": 3,
-                "color": "skyblue"
+                "color": "#ff6f00"
             },
             "edge4": {
                 "source": "node2",
                 "target": "node4",
                 "label": "2-4",
                 "width": 3,
-                "color": "skyblue"
+                "color": "#ff6f00"
             },
             "edge5": {
                 "source": "node4",
@@ -353,7 +396,7 @@
                 "target": "node10",
                 "label": "6-10",
                 "width": 3,
-                "color": "skyblue"
+                "color": "#ff6f00"
             }
         },
         "paths": {

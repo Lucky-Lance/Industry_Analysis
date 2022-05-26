@@ -1,0 +1,20 @@
+{
+    "0": {
+        "nodeNum": 100,
+        "edgeNum": 150,
+        "size": 50,
+        "darkPercent": 20,
+        "corePercent": 15,
+        "coreService": "赌博",
+        "type": "小型"
+    },
+    "1": {
+        "nodeNum": 200,
+        "edgeNum": 400,
+        "size": 69,
+        "darkPercent": 40,
+        "corePercent": 30,
+        "coreService": "赌博",
+        "type": "大型"
+    }
+}

@@ -8,81 +8,20 @@
         <b-row>
             <b-col lg="7">
                 <Widget class="bg-transparent">
-                    <!-- <Map /> -->
                     <main-graph :data="mainGraphData" @choose_graph_id='changeGraph($event)' />
                 </Widget>
             </b-col>
             <b-col lg="4" offset-lg="1">
-                <Widget class="bg-transparent" title="<h5>Map<span class='fw-semi-bold'>&nbsp;Statistics</span></h5>"
+                <Widget class="bg-transparent" title="<h4>黑产子图<span class='fw-semi-bold'>&nbsp;概要</span></h4>"
                     customHeader>
-                    <p>Status: <strong>Live</strong></p>
-                    <p>
-                        <span class="circle bg-primary text-white"><i class="la la-map-marker" /></span> &nbsp;
-                        146 Countries, 2759 Cities
-                    </p>
-                    <div class="row progress-stats">
-                        <div class="col-9">
-                            <h6 class="name">Foreign Visits</h6>
-                            <p class="description deemphasize mb-xs">Some Cool Text</p>
-                            <b-progress variant="primary" :value="60" :max="100" class="progress-xs" />
-                        </div>
-                        <div class="col-3 text-center">
-                            <span class="status rounded rounded-lg bg-widget mt-lg-0 mt-4">
-                                <span>
-                                    <AnimatedNumber :value="75" v-bind="animateNumberOptions"></AnimatedNumber>%
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="row progress-stats">
-                        <div class="col-9">
-                            <h6 class="name">Local Visits</h6>
-                            <p class="description deemphasize mb-xs">P. to C. Conversion</p>
-                            <b-progress variant="danger" :value="39" :max="100" class="progress-xs" />
-                        </div>
-                        <div class="col-3 text-center">
-                            <span class="status rounded rounded-lg bg-widget mt-lg-0 mt-4">
-                                <span>
-                                    <AnimatedNumber :value="84" v-bind="animateNumberOptions"></AnimatedNumber>%
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="row progress-stats">
-                        <div class="col-9">
-                            <h6 class="name">Sound Frequencies</h6>
-                            <p class="description deemphasize mb-xs">Average Bitrate</p>
-                            <b-progress variant="success" :value="80" :max="100" class="progress-xs" />
-                        </div>
-                        <div class="col-3 text-center">
-                            <span class="status rounded rounded-lg bg-widget mt-lg-0 mt-4">
-                                <span>
-                                    <AnimatedNumber :value="92" v-bind="animateNumberOptions"></AnimatedNumber>%
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                    <h6 class="fw-semi-bold mt">Map Distributions</h6>
-                    <p>Tracking: <strong>Active</strong></p>
-                    <p>
-                        <span class="circle bg-primary text-white"><i class="la la-cog" /></span>
-                        &nbsp; 391 elements installed, 84 sets
-                    </p>
-                    <b-input-group class="mt">
-                        <b-form-input placeholder="Search..." />
-                        <b-input-group-append>
-                            <b-btn variant="default">
-                                <i class="la la-search" />
-                            </b-btn>
-                        </b-input-group-append>
-                    </b-input-group>
+                    <abstract :data="abstractData"/>
                 </Widget>
             </b-col>
         </b-row>
         <b-row>
             <b-col lg="8" xs="12">
                 <Widget title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;结构图</span></h5" customHeader>
-                    <sub-graph :data="subGraphData" />
+                    <sub-graph v-for="(item, index) in subgraphs" :key="index" :data="subGraphData" />
                 </Widget>
             </b-col>
             <b-col lg="4" xs="12">
@@ -90,7 +29,7 @@
                     <b-col lg="12" xs="12">
                         <Widget title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;关键路径</span></h5" bodyClass="p-0"
                             customHeader>
-                            <path-table :data="tableData" :raw-data="subGraphData"/>
+                            <path-table :data="tableData" :raw-data="subGraphData" />
                         </Widget>
                     </b-col>
                     <b-col lg="12" xs="12">
@@ -109,9 +48,9 @@
 <script>
 import { reactive, ref } from "vue";
 import Widget from '@/components/Widget/Widget';
-import AnimatedNumber from "animated-number-vue";
 
 import MainGraph from "./components/MainGraph/MainGraph.vue"
+import Abstract from "./components/Abstract/Abstract.vue"
 import RightDownChart from "./components/RightDownChart/RightDownChart.vue"
 import SubGraph from "./components/SubGraph/SubGraph.vue"
 import PathTable from "./components/PathTable/PathTable.vue"
@@ -123,24 +62,25 @@ let subgraph_init = true;
 export default {
     name: 'Analysis',
     components: {
-        Widget, AnimatedNumber, MainGraph, RightDownChart, SubGraph, PathTable
+        Widget, MainGraph, Abstract, RightDownChart, SubGraph, PathTable
     },
     data() {
         return {
-            animateNumberOptions: {
-                duration: 2000,
-                easing: 'easeInQuad',
-                formatValue(value) {
-                    return value.toFixed(0);
-                }
-            },
             currentGraphID: 0,
             mainGraphData: {
                 "allNodes": [],
                 "allEdges": []
             },
-
-            subGraphData: reactive({
+            abstractData: {
+                "nodeNum": 0,
+                "edgeNum": 0,
+                "size": 0,
+                "darkPercent": 0,
+                "corePercent": 0,
+                "coreService":"0",
+                "type":""
+            },
+            subGraphData: {
                 nodes: {},
                 edges: {},
                 paths: reactive({}),
@@ -148,8 +88,7 @@ export default {
                 layouts: {},
                 selectedNodes: ref([]),
                 nodesProp: {}
-            }),
-
+            },
 
             tableData: {
                 "columns": [],
@@ -162,11 +101,13 @@ export default {
                 "type2field": {},
 
                 "field2type": {}
-            }
+            },
+            subgraphs: []
         };
     },
     mounted() {
         this.getMainData();
+        this.getAbstractData(this.currentGraphID);
         this.getTableData(this.currentGraphID);
         this.getSubGraph(this.currentGraphID);
         this.getRightDownChartData(this.currentGraphID);
@@ -177,6 +118,20 @@ export default {
             axios.get(this.$api + "/mainGraphData")
                 .then(function (response) {
                     self.mainGraphData = response.data;
+                    console.log(response.data);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+                .then(function () {
+                    console.log("finish");
+                });
+        },
+        getAbstractData: function (id) {
+            self = this;
+            axios.get(this.$api + "/abstractData/" + id)
+                .then(function (response) {
+                    self.abstractData = response.data;
                     console.log(response.data);
                 })
                 .catch(function (error) {
@@ -202,6 +157,7 @@ export default {
         },
         getSubGraph: function (id) {
             self = this;
+            self.subgraphs = []
             axios.get(this.$api + "/subGraphData/" + id)
                 .then(function (response) {
                     console.log("update subgraph");
@@ -246,7 +202,7 @@ export default {
                         pathNodes.push(new Set(res.pathNodes[i]));
                     }
                     self.subGraphData.pathNodes = pathNodes;
-                    self.subGraphData.layouts = {}
+                    // self.subGraphData.layouts = {}
 
                     console.log(self.subGraphData);
                 })
@@ -254,6 +210,7 @@ export default {
                     console.log(error);
                 })
                 .then(function () {
+                    self.subgraphs = [0];
                     console.log("subgraph finish");
                 });
         },
@@ -278,6 +235,7 @@ export default {
     watch: {
         currentGraphID(newID, oldID) {
             console.log(this.currentGraphID);
+            this.getAbstractData(newID);
             this.getTableData(newID);
             this.getSubGraph(newID);
             this.getRightDownChartData(newID);
@@ -286,6 +244,9 @@ export default {
 
 };
 </script>
+
+
+
 
 
 
