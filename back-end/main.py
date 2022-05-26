@@ -1,3 +1,4 @@
+from calendar import c
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pandas import DataFrame
@@ -5,6 +6,7 @@ from pydantic import BaseModel
 import json, uvicorn
 
 from typing import Union, List, Mapping
+from copy import deepcopy
 
 app = FastAPI()
 # cross-origin resource sharing
@@ -31,7 +33,19 @@ def read_subGraphData(id: int):
 
 @app.get("/tableData/{id}")
 def read_tableData(id: int):
-    return tableData[str(id)]
+    subGraph = subGraphData[str(id)]
+    nodes = subGraph["nodes"]
+    table = deepcopy(tableData)
+    for i, path in enumerate(subGraph["pathNodes"]):
+        table["tableData"].append(
+            {
+                "Path ID": i + 1,
+                "Start Node": nodes[path[0]]["name"],
+                "End Node": nodes[path[-1]]["name"],
+                "Length": len(path)
+            }
+        )
+    return table
 
 @app.get("/rightDownCharData/{id}")
 def read_rightDownCharData(id: int):

@@ -31,7 +31,7 @@ export default {
             fData.forEach(function (d) { d.total = d.freq.Domain + d.freq.IP + d.freq.Cert + d.freq.ASN; });
 
             // function to handle histogram.
-            function histoGram(fD) {
+            function histoGram(fD, self) {
 
                 var hG = {}, hGDim = { t: 60, r: 0, b: 30, l: 0 };
                 hGDim.w = 500 - hGDim.l - hGDim.r,
@@ -83,6 +83,14 @@ export default {
                     .attr("text-anchor", "middle");
 
                 function mouseover(d) {  // utility function to be called on mouseover.
+                    self.$bus.$emit('select', function(x, name){
+                        let start = +d[0].split(" - ")[0];
+                        let end = +d[0].split(" - ")[1];
+                        if (x["degree"] >= start && x["degree"] < end) 
+                            return false;
+                        else 
+                            return true;
+                    });
                     // filter for selected state.
                     let st = fData.filter(function (s) { return s.State == d[0]; })[0],
                         nD = d3.keys(st.freq).map(function (s) { return { type: s, freq: st.freq[s] }; }),
@@ -95,8 +103,16 @@ export default {
                     leg1.update(aD);
                 }
 
-                function mouseout() {    // utility function to be called on mouseout.
-                    // reset the pie-chart and legend.    
+                function mouseout(d) {    // utility function to be called on mouseout.
+                    // reset the pie-chart and legend. 
+                    self.$bus.$emit('restore', function(x, name){
+                        let start = +d[0].split(" - ")[0];
+                        let end = +d[0].split(" - ")[1];
+                        if (x["degree"] >= start && x["degree"] < end) 
+                            return false;
+                        else 
+                            return true;
+                    });
                     pC.update(tF);
                     leg.update(tF);
                     pC1.update(aF);
@@ -155,6 +171,14 @@ export default {
                 // Utility function to be called on mouseover a pie slice.
                 function mouseover(d) {
 
+                    self.$bus.$emit('select', function(x, name){
+                        let gType = d.data.type;
+                        if (x["type"]  == gType) 
+                            return false;
+                        else 
+                            return true;
+                    });
+
                     var filterField = type2field[d.data.type];
                     var field = []
                     for(var key in filterField){
@@ -168,7 +192,14 @@ export default {
                     }), segColor(d.data.type));
                 }
                 //Utility function to be called on mouseout a pie slice.
-                function mouseout() {
+                function mouseout(d) {
+                    self.$bus.$emit('restore', function(x, name){
+                        let gType = d.data.type;
+                        if (x["type"]  == gType) 
+                            return false;
+                        else 
+                            return true;
+                    });
                     // call the update function of histogram with all data.
                     hG.update(fData.map(function (v) {
                         return [v.State, v.Count];
@@ -217,6 +248,14 @@ export default {
                 // Utility function to be called on mouseover a pie slice.
                 function mouseover(d) {
 
+                    self.$bus.$emit('select', function(x, name){
+                        let gType = d.data.type;
+                        if (x["pos"]  == gType) 
+                            return false;
+                        else 
+                            return true;
+                    });
+
                     var filterType = field2type[d.data.type];
 
                     var field = [];
@@ -231,7 +270,16 @@ export default {
                     }), segColor(d.data.type));
                 }
                 //Utility function to be called on mouseout a pie slice.
-                function mouseout() {
+                function mouseout(d) {
+
+                    self.$bus.$emit('restore', function(x, name){
+                        let gType = d.data.type;
+                        if (x["pos"]  == gType) 
+                            return false;
+                        else 
+                            return true;
+                    });
+
                     // call the update function of histogram with all data.
                     hG.update(fData.map(function (v) {
                         return [v.State, v.Count];
@@ -350,7 +398,7 @@ export default {
             // calculate total frequency by state for all segment.
             var sF = fData.map(function (d) { return [d.State, d.Count]; });
 
-            var hG = histoGram(sF), // create the histogram.
+            var hG = histoGram(sF, this), // create the histogram.
                 pC = pieChart_tF(tF), // create the pie-chart.
                 leg = legend_tF(tF),  // create the legend.
                 pC1 = pieChart_aF(aF), // create the pie-chart.
@@ -359,6 +407,7 @@ export default {
     },
     watch: {
         data(newData, oldData) {
+            console.log("update:", newData)
             this.dashboard('#dashboard', newData.freqData, newData.type2field, newData.field2type);
         }
     }
