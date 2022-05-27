@@ -91,15 +91,15 @@
                         let $ul = "<ul>"
                             // +"<li><img src=' "+imgPathSrc+" ' width='30px' height='25px'><span> 设备类型:"+hoveNodeList.name+" </span> </li>"
                             + "<li>" + hoveNodeList.industry + "</li>"
-                            + "<li>Type:" + hoveNodeList.type + "</li>"
-                            + "<li>Count:" + hoveNodeList.value + "</li>"
+                            + "<li>Type : " + hoveNodeList.type + "</li>"
+                            + "<li>Count : " + hoveNodeList.value + "</li>"
                             + "</ul>";
                         $("#divHoverNode").append($ul);
                     }
                     $('#divHoverNode').css({
                         'display': 'block',
-                        'left': properties.event.offsetX + 15,
-                        'top': properties.event.offsetY + 15
+                        'left': properties.event.offsetX + 40,
+                        'top': properties.event.offsetY + 40,                        
                     });
                     $('#menuOperation').hide();
                 }
@@ -113,8 +113,8 @@
                     $("#divHoverNode").append($ul);
                     $('#divHoverNode').css({
                         'display': 'block',
-                        'left': properties.event.offsetX + 15,
-                        'top': properties.event.offsetY + 15
+                        'left': properties.event.offsetX + 40,
+                        'top': properties.event.offsetY + 40
                     });
                     $('#menuOperation').hide();
                 }
@@ -127,8 +127,8 @@
                     } else {
                         $('#menuOperation').css({
                             'display': 'block',
-                            'left': properties.event.center.x + 15,
-                            'top': properties.event.center.y + 15
+                            'left': properties.event.center.x + 40,
+                            'top': properties.event.center.y + 40
                         });
                         $("#divHoverNode").hide();
                     }

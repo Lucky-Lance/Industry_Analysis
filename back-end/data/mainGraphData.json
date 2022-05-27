@@ -1,17 +1,17 @@
  {
     "allNodes": [
-                { "id": 1, "industry": "industry1", "type": "Parent", "pid": 0, "subids": [2, 3, 4, 5], "group": 0, "label": "industry1" },
-                { "id": 2, "industry": "industry1", "type": "cert",  "value": "3", "pid": 1, "group": 0, "label": "cert" },
-                { "id": 3, "industry": "industry1", "type": "ip",  "value": "200", "pid": 1, "group": 0, "label": "ip" },
-                { "id": 4, "industry": "industry1", "type": "domain",  "value": "10", "pid": 1, "group": 0, "label": "domain" },
-                { "id": 5, "industry": "industry1", "type": "name",  "value": "20", "pid": 1, "group": 0, "label": "name" },
+                { "id": 1, "industry": "Industry1", "type": "Parent", "pid": 0, "subids": [2, 3, 4, 5], "group": 0, "label": "Industry1" },
+                { "id": 2, "industry": "Industry1", "type": "cert",  "value": "3", "pid": 1, "group": 0, "label": "cert" },
+                { "id": 3, "industry": "Industry1", "type": "ip",  "value": "200", "pid": 1, "group": 0, "label": "ip" },
+                { "id": 4, "industry": "Industry1", "type": "domain",  "value": "10", "pid": 1, "group": 0, "label": "domain" },
+                { "id": 5, "industry": "Industry1", "type": "name",  "value": "20", "pid": 1, "group": 0, "label": "name" },
 
 
-                { "id": 6, "industry": "industry2", "type": "Parent", "pid": 0, "subids": [7, 8, 9, 10], "group": 1, "label": "industry2" },
-                { "id": 7, "industry": "industry2", "type": "cert",  "value": "30", "pid": 6, "group": 1, "label": "cert" },
-                { "id": 8, "industry": "industry2", "type": "ip",  "value": "200", "pid": 6, "group": 1, "label": "ip" },
-                { "id": 9, "industry": "industry2", "type": "domain",  "value": "10", "pid": 6, "group": 1, "label": "domain" },
-                { "id": 10, "industry": "industry2", "type": "name",  "value": "40", "pid": 6, "group": 1, "label": "name" }
+                { "id": 6, "industry": "Industry2", "type": "Parent", "pid": 0, "subids": [7, 8, 9, 10], "group": 1, "label": "Industry2" },
+                { "id": 7, "industry": "Industry2", "type": "cert",  "value": "30", "pid": 6, "group": 1, "label": "cert" },
+                { "id": 8, "industry": "Industry2", "type": "ip",  "value": "200", "pid": 6, "group": 1, "label": "ip" },
+                { "id": 9, "industry": "Industry2", "type": "domain",  "value": "10", "pid": 6, "group": 1, "label": "domain" },
+                { "id": 10, "industry": "Industry2", "type": "name",  "value": "40", "pid": 6, "group": 1, "label": "name" }
             ],
     "allEdges": [
         { "id": "1_2", "from": 1, "to": 2 },

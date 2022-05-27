@@ -17,32 +17,39 @@ body {
 }
 
 .menu {
-    /*这个样式不写，右键弹框会一直显示在画布的左下角*/
     position: absolute;
-    background: rgba(3, 3, 3, 0.6);
+    background: rgba(0, 0, 0, 0.4);
     border-radius: 5px;
     left: -99999px;
     top: -999999px;
 }
 
 .menu ul {
-    list-style: none
+    list-style: none;
+    margin-top: 5px;;
+    margin-bottom: 5px;
+    margin-left: 15px;
+    margin-right: 15px;
 }
 
 .menu ul li {
-    padding: 5px 10px;
+    padding: 5px 5px;
     color: #ffff;
-    border-bottom: 1px solid #ffffff;
+    /* border-bottom: 1px solid #ffffff; */
     font-size: 14px;
     cursor: pointer;
     list-style: none;
+    height: 30px;
+
+    vertical-align: center;
+    text-align: center;
 }
 
-.menu ul li:hover {
+/* .menu ul li:hover {
     color: #659bc5;
-}
+} */
 
-.menu ul li:last-child {
+/* .menu ul li:last-child {
     border-bottom: none;
     padding: 5px 10px 0 10px;
-}
+} */

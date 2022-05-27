@@ -11,26 +11,30 @@
     opacity: 0.9;
 } */
 
-rect:hover {
-    fill: blue;
+#dashboardPie1, #dashboardPie2{
+    text-align: center;
 }
+
+/* rect:hover {
+    fill: blue;
+} */
 
 .axis {
     font: 10px sans-serif;
 }
 
-.legend tr {
+/* .legend tr {
     border-bottom: 1px solid grey;
 }
 
 .legend tr:first-child {
     border-top: 1px solid grey;
-}
+} */
 
 .axis path,
 .axis line {
     fill: none;
-    stroke: #000;
+    stroke: none;
     shape-rendering: crispEdges;
 }
 
@@ -39,19 +43,33 @@ rect:hover {
 } */
 
 .legend {
-    margin-bottom: 76px;
-    display: inline-block;
-    border-collapse: collapse;
-    border-spacing: 0px;
+    width: 100%;
+    table-layout:fixed;
+    /* margin: auto 0; */
+    margin-top: 30px;
+    margin-bottom: 30px;
+    /* display: inline-block; */
+    /* border-collapse: collapse;
+    border-spacing: 0px; */
+}
+
+.legend td:first-child {
+    width:20%;
 }
 
 .legend td {
     padding: 4px 5px;
     vertical-align: bottom;
+    text-align: center;
+    width:26.6%;
+    word-wrap:break-word;
 }
 
-.legendFreq,
-.legendPerc {
-    text-align: right;
-    width: 50px;
+#dashboardPie2 .legend {
+    margin-bottom: 59px;
 }
+
+/* .legendFreq,
+.legendPerc {
+    text-align: center;
+} */

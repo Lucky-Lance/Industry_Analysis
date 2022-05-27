@@ -6,15 +6,16 @@
             </small>
         </h1>
         <b-row>
-            <b-col lg="7">
+            <b-col lg="8">
                 <Widget class="bg-transparent">
                     <main-graph :data="mainGraphData" @choose_graph_id='changeGraph($event)' />
                 </Widget>
             </b-col>
-            <b-col lg="4" offset-lg="1">
+            <!-- <b-col lg="4" offset-lg="1"> -->
+            <b-col lg="4">
                 <Widget class="bg-transparent" title="<h4>黑产子图<span class='fw-semi-bold'>&nbsp;概要</span></h4>"
                     customHeader>
-                    <abstract :data="abstractData"/>
+                    <abstract :data="abstractData" />
                 </Widget>
             </b-col>
         </b-row>
@@ -32,13 +33,16 @@
                             <path-table :data="tableData" :raw-data="subGraphData" />
                         </Widget>
                     </b-col>
-                    <b-col lg="12" xs="12">
+                </b-row>
+
+                <right-down-chart :data="rightDownChartData" />
+                <!-- <b-col lg="12" xs="12">
                         <Widget title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;统计数据</span></h5" bodyClass="p-0"
                             customHeader>
                             <right-down-chart :data="rightDownChartData" />
                         </Widget>
-                    </b-col>
-                </b-row>
+                    </b-col> -->
+
 
             </b-col>
         </b-row>
@@ -77,8 +81,8 @@ export default {
                 "size": 0,
                 "darkPercent": 0,
                 "corePercent": 0,
-                "coreService":"0",
-                "type":""
+                "coreService": "0",
+                "type": ""
             },
             subGraphData: {
                 nodes: {},
@@ -87,7 +91,8 @@ export default {
                 pathNodes: [],
                 layouts: {},
                 selectedNodes: ref([]),
-                nodesProp: {}
+                nodesProp: {},
+                zoomLevel: 0.5
             },
 
             tableData: {
@@ -111,6 +116,51 @@ export default {
         this.getTableData(this.currentGraphID);
         this.getSubGraph(this.currentGraphID);
         this.getRightDownChartData(this.currentGraphID);
+
+        this.$bus.$on('select', (filter) => {
+            // console.log(this.subGraphData.nodes);
+            for (let node in this.subGraphData.nodesProp) {
+                if (filter(this.subGraphData.nodesProp[node], node)) {
+                    this.subGraphData.nodes[node]["color"] = this.subGraphData.nodes[node]["color"] + "10";
+                }
+                else {
+                    this.subGraphData.nodes[node]["size"] += 6;
+                }
+            }
+            for (let edge in this.subGraphData.edges) {
+                let source = this.subGraphData.edges[edge]["source"];
+                let target = this.subGraphData.edges[edge]["target"];
+                if (filter(this.subGraphData.nodesProp[source], source) || filter(this.subGraphData.nodesProp[target], target)) {
+                    this.subGraphData.edges[edge]["color"] = this.subGraphData.edges[edge]["color"] + "10";
+                }
+                else {
+                    this.subGraphData.edges[edge]["width"] += 4;
+                }
+            }
+            console.log(this.subGraphData.nodes);
+
+        });
+
+        this.$bus.$on('restore', (filter) => {
+            for (let node in this.subGraphData.nodesProp) {
+                if (filter(this.subGraphData.nodesProp[node], node)) {
+                    this.subGraphData.nodes[node]["color"] = this.subGraphData.nodes[node]["color"].slice(0, -2);
+                }
+                else {
+                    this.subGraphData.nodes[node]["size"] -= 6;
+                }
+            }
+            for (let edge in this.subGraphData.edges) {
+                let source = this.subGraphData.edges[edge]["source"];
+                let target = this.subGraphData.edges[edge]["target"];
+                if (filter(this.subGraphData.nodesProp[source], source) || filter(this.subGraphData.nodesProp[target], target)) {
+                    this.subGraphData.edges[edge]["color"] = this.subGraphData.edges[edge]["color"].slice(0, -2);
+                }
+                else {
+                    this.subGraphData.edges[edge]["width"] -= 4;
+                }
+            }
+        });
     },
     methods: {
         getMainData: function () {
@@ -160,14 +210,14 @@ export default {
             self.subgraphs = []
             axios.get(this.$api + "/subGraphData/" + id)
                 .then(function (response) {
-                    console.log("update subgraph");
-                    console.log(self.subGraphData.paths);
+                    // console.log("update subgraph");
+                    // console.log(self.subGraphData.paths);
 
                     for (let i in self.subGraphData.paths)
                         self.subGraphData.paths[i].active = false;
 
-                    console.log(self.subGraphData.paths);
-                    console.log("remove");
+                    // console.log(self.subGraphData.paths);
+                    // console.log("remove");
 
                     let res = response.data;
                     console.log(res);
@@ -177,8 +227,9 @@ export default {
                     self.subGraphData.selectedNodes = ref([]);
 
                     self.subGraphData.nodesProp = res.nodesProp;
+                    self.subGraphData.zoomLevel = 0.5;
 
-                    // initialize solts
+                    // initialize slots
                     if (subgraph_init) {
                         subgraph_init = false;
                         for (let i = 0; i < 100; ++i)
@@ -244,53 +295,6 @@ export default {
 
 };
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

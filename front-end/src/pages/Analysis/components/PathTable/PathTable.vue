@@ -1,4 +1,5 @@
 <template>
+    <br/>
     <ve-table :columns="data.columns" 
             :table-data="data.tableData" 
             :max-height="300"
@@ -44,3 +45,7 @@ export default {
     }
 }
 </script>
+
+<style>
+    @import "./style.css";
+</style>
