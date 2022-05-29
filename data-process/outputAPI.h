@@ -134,7 +134,7 @@
         raw_to_mapped[h] = count;
         auto typeClass = nodes.find(h)->second.typeClass;
         Json::Value node_json;
-        if(iter->second.typeClass == IP_ASS){
+        if(iter->second.typeClass == IP_ASS || iter->second.typeClass == PHONE_ASS){
             node_json["name"] = "[" + iter->second.type + "]: " + iter->second.id_str;
         }
         else {
