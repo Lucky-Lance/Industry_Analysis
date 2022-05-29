@@ -3,7 +3,7 @@
 #include <filesystem>
 using namespace std;
 filesystem::path DPath, rootPath, outputPath, tmpPath, outputAPIPath;
-
+filesystem::path sourceLinkName, sourceNodeName;
 void initPath(){
 #if defined(WIN32)
     DPath = filesystem::path("D:");
@@ -17,6 +17,7 @@ void initPath(){
     tmpPath = rootPath / "tmp";
     cout << "rootPath = " << rootPath << endl;
     cout << "tmpPath = " << tmpPath << endl;
-
+    sourceLinkName = rootPath.parent_path() / "Link.csv";
+    sourceNodeName = rootPath.parent_path() / "Node.csv";
 }
 #endif

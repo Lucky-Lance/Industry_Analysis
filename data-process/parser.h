@@ -144,9 +144,30 @@ struct Hash{
         return hash2 < other.hash2;
     }
 };
-
+enum NodeAssetType{
+    DOMAIN_ASS, IP_ASS, CERT_ASS, OTHERS_ASS, NAME_ASS, PHONE_ASS, EMAIL_ASS, ASN_ASS
+};
+const static map<string, NodeAssetType> stringToAssetType = {
+        {"Domain", DOMAIN_ASS}, {"IP", IP_ASS},
+        {"Cert", CERT_ASS}, {"Whois_Name", NAME_ASS},
+        {"Whois_Phone", PHONE_ASS}, {"Whois_Email", EMAIL_ASS},
+        {"IP_C", IP_ASS}, {"ASN", ASN_ASS},
+};
+const static map<NodeAssetType, string> AssetTypeToString = {
+        {DOMAIN_ASS, "Domain"}, {IP_ASS, "IP"},
+        {CERT_ASS, "Cert"}, {OTHERS_ASS, "unknow"},
+        {NAME_ASS, "Whois_Name"}, {PHONE_ASS, "Whois_Phone"},
+        {EMAIL_ASS, "Whois_Email"}, {ASN_ASS, "ASN"},
+};
+const static map<NodeAssetType, string> AssetTypeToIcon = {
+        {DOMAIN_ASS, "&#xe7ee"}, {IP_ASS, "&#xe55f"},
+        {CERT_ASS, "&#xe8e8"}, {NAME_ASS, "&#xea67"},
+        {PHONE_ASS, "#&xe0b0"}, {EMAIL_ASS, "&#xe0be"},
+        {ASN_ASS, "#&xeab1"}, {OTHERS_ASS, "&#xe339"}
+};
 struct ItemType{
     string name, type, id_str;
+    NodeAssetType typeClass;
     vector<char> industry;
     Hash id_hash;
     explicit ItemType(const string& itemString){
@@ -161,6 +182,7 @@ struct ItemType{
         id_hash = Hash(pure_id_str);
         name = move(splited_itemString[1]);
         type = move(splited_itemString[2]);
+        typeClass = stringToAssetType.at(type);
         industry = move(industryParser(splited_itemString[3]));
         id_str = move(splited_itemString[0]);
     }
@@ -171,6 +193,7 @@ struct ItemType{
         id_str = move(other.id_str);
         industry = move(other.industry);
         id_hash = other.id_hash;
+        typeClass = other.typeClass;
     }
     bool operator==(const ItemType& other) const {
         return id_hash == other.id_hash;

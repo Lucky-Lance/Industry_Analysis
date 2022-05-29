@@ -11,13 +11,16 @@
             var option;
 
             myChart.showLoading();
-            myChart.showLoading();
-            $.get('/output/group5-2500.json', function (webkitDep) {
+            $.get('/output/myGroup1-150.json', function (webkitDep) {
                 console.log(webkitDep);
                 myChart.hideLoading();
+                let legendData = [];
+                for(let x of webkitDep.categories){
+                    legendData.push(x.name);
+                }
                 option = {
                     legend: {
-                        data: ['HTMLElement', 'WebGL', 'SVG', 'CSS', 'Other']
+                        data: legendData
                     },
                     series: [{
                         type: 'graph',
@@ -48,6 +51,6 @@
         });
     </script>
 </head>
-<div id="main" style="width: 80%; height: 80%;"></div>
+<div id="main" style="position: relative; width: 100%; height: 100%; padding: 0px; margin: 0px; border-width: 0px; cursor: default;"></div>
 
 </html>

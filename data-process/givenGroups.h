@@ -69,7 +69,9 @@ void group1(bool buildFromScratch){
             DEBUG;
             exit(1);
         }
-        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2}, maxNodes);
+        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2}, maxNodes,[](uint32_t edgeWeight,bool hasBlack,uint32_t depth)->int{
+            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
+        });
         auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
         f << graphToJson_echarts(group1Links, group1Nodes, set<Hash>{h1, h2});
         f.close();
@@ -116,7 +118,9 @@ void group2(bool buildFromScratch){
             DEBUG;
             exit(1);
         }
-        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2}, maxNodes);
+        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2}, maxNodes, [](uint32_t edgeWeight,bool hasBlack,uint32_t depth)->int{
+            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
+        });
         auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
         f << graphToJson_echarts(group1Links, group1Nodes, set<Hash>{h1, h2});
         f.close();
@@ -166,7 +170,9 @@ void group3(bool buildFromScratch){
             DEBUG;
             exit(1);
         }
-        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2, h3, h4, h5}, maxNodes);
+        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2, h3, h4, h5}, maxNodes, [](uint32_t edgeWeight,bool hasBlack,uint32_t depth)->int{
+            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
+        });
         auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
         f << graphToJson_echarts(group1Links, group1Nodes, set<Hash>{h1, h2, h3, h4, h5});
         f.close();
@@ -213,7 +219,9 @@ void group4(bool buildFromScratch){
             DEBUG;
             exit(1);
         }
-        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2}, maxNodes);
+        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2}, maxNodes, [](uint32_t edgeWeight,bool hasBlack,uint32_t depth)->int{
+            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
+        });
         auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
         f << graphToJson_echarts(group1Links, group1Nodes, set<Hash>{h1, h2});
         f.close();
@@ -261,7 +269,9 @@ void group5(bool buildFromScratch){
             DEBUG;
             exit(1);
         }
-        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2, h3, h4}, maxNodes);
+        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1, h2, h3, h4}, maxNodes, [](uint32_t edgeWeight,bool hasBlack,uint32_t depth)->int{
+            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
+        });
         auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
         f << graphToJson_echarts(group1Links, group1Nodes, set<Hash>{h1, h2, h3, h4});
         f.close();

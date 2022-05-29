@@ -3,9 +3,125 @@
 #include "parser.h"
 #include <regex>
 #include <json/json.h>
+[[nodiscard]]string graphToJson_cwd(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes,
+             const vector<vector<Hash>>& paths,
+             const map<Hash, tuple<uint32_t, NodeAssetType, uint32_t>>& nodeStatistics){
+    // check legal
+    {
+        for(const auto& p: paths){
+            for(const Hash& h: p){
+                assert(nodes.find(h) != nodes.cend());
+            }
+        }
+    }
+    map<Hash, uint32_t> raw_to_mapped;
+    vector<map<uint32_t, uint32_t>> mapped_mapped_to_mapped_edge;
+    mapped_mapped_to_mapped_edge.resize(nodes.size(), {});
+    Json::Value root_json;
+    {// nodes
+        Json::Value nodes_json = Json::ValueType::objectValue;
+        uint32_t count = 0;
+        const static map<uint32_t,string> reachUint_to_colorString = {
+                {0, /*"Top"*/"#dc143c" }, {1, /*"Mid"*/"#6495ed"}, {2, /*"Bot"*/"#0000cd"},
+        };
+        const static map<uint32_t, uint32_t> reachUint_to_nodeSize = {
+                {0, /*"Top"*/16 }, {1, /*"Mid"*/13}, {2, /*"Bot"*/10},
+        };
+        for (auto iter = nodes.cbegin(); iter != nodes.cend(); iter++) {
+            const Hash h = iter->first;
+            raw_to_mapped[h] = count;
+            count++;
+            Json::Value nodeItem_json;
+            uint32_t nodeReach = get<2>(nodeStatistics.at(h));
+            nodeItem_json["name"] = "N" + to_string(count);
+            nodeItem_json["icon"] = AssetTypeToIcon.at(iter->second.typeClass);
+            nodeItem_json["size"] = reachUint_to_nodeSize.at(nodeReach);
+            nodeItem_json["color"] = reachUint_to_colorString.at(nodeReach);
 
+            nodes_json["node" + to_string(count)] = move(nodeItem_json);
+        }
+        root_json["nodes"] = move(nodes_json);
+    }
+    {// edges
+        Json::Value edges_json = Json::ValueType::objectValue;
+        uint32_t count = 0;
+        for (const auto& edge: links) {
+            uint32_t sourceID = raw_to_mapped.at(get<1>(edge));
+            uint32_t targetID = raw_to_mapped.at(get<2>(edge));
+            mapped_mapped_to_mapped_edge.at(sourceID)[targetID] = count;
+            mapped_mapped_to_mapped_edge.at(targetID)[sourceID] = count;
+            count++;
+            Json::Value edgeItem_json;
+            edgeItem_json["source"] = "node"+ to_string(sourceID+1);
+            edgeItem_json["target"] = "node"+ to_string(targetID+1);
+            edgeItem_json["label"] = to_string(sourceID+1) + '-' + to_string(targetID+1);
+            edgeItem_json["width"] = 3;// TODO
+            edgeItem_json["color"] = "#d8d8d8";
+            edges_json["edge"+ to_string(count)] = move(edgeItem_json);
+        }
+        root_json["edges"] = move(edges_json);
+    }
+    {// paths
+        Json::Value paths_json=Json::ValueType::objectValue;
+        uint32_t count = 0;
+        for(const auto& path: paths){
+            count++;
+            Json::Value pathn_json=Json::ValueType::objectValue;
+            Json::Value pathItem_json=Json::ValueType::objectValue;
+            // pathEdges_json
+            Json::Value pathEdges_json=Json::ValueType::arrayValue;
+            assert(path.size()>1);
+            for(size_t i=0; i<path.size()-1; i++){
+                uint32_t sourceID = raw_to_mapped.at(path[i]);
+                uint32_t targetID = raw_to_mapped.at(path[i+1]);
+                uint32_t edgeID = mapped_mapped_to_mapped_edge.at(sourceID).at(targetID);
+                pathEdges_json.append("edge"+ to_string(edgeID+1));
+            }
+            pathItem_json["edges"] = move(pathEdges_json);
+            pathItem_json["active"] = false;
+            pathItem_json["width"] = 10;
+        }
+        root_json["pathNodes"] = move(paths_json);
+    }
+    {// pathNodes
+        Json::Value pathNodes_json= Json::ValueType::arrayValue;
+        for(const auto& path: paths){
+            Json::Value pNodes_json = Json::ValueType::arrayValue;
+            for(Hash h: path){
+                uint32_t nodeID = raw_to_mapped.at(h);
+                pNodes_json.append("node" + to_string(nodeID+1));
+            }
+            pathNodes_json.append(move(pNodes_json));
+        }
+        root_json["pathNodes"] = move(pathNodes_json);
+    }
+    {// layouts
+        Json::Value layouts_json = Json::ValueType::objectValue;
+        root_json["layouts"] = move(layouts_json);
+    }
+    {// nodesProp
+        Json::Value nodesProp_json = Json::ValueType::objectValue;
+        const static map<uint32_t,string> uint_to_reachString = {
+                {0, "Top"}, {1, "Mid"}, {2, "Bot"},
+        };
+        for(auto iter=nodes.cbegin(); iter!=nodes.cend(); iter++){
+            Hash h = iter->first;
+            Json::Value nodesPropItem_json = Json::ValueType::objectValue;
+            uint32_t nodeID = raw_to_mapped.at(h);
+            auto nodeStatistic = nodeStatistics.at(h);
+            nodesPropItem_json["degree"] = get<0>(nodeStatistic);
+            nodesPropItem_json["type"] = AssetTypeToString.at(get<1>(nodeStatistic));
+            nodesPropItem_json["pos"] = uint_to_reachString.at(get<2>(nodeStatistic));
+            nodesProp_json["node"+ to_string(nodeID+1)] = move(nodesPropItem_json);
+        }
+        root_json["nodesProp"] = move(nodesProp_json);
+    }
+    Json::StreamWriterBuilder builder;
+    return Json::writeString(builder, root_json);
+}
 [[nodiscard]]string graphToJson_echarts(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes,
-    const set<Hash>& centers){
+    const set<Hash>& centers, const set<Hash>& exceptNodes = {}, const set<Hash>& clueNodes = {},
+    const set<Hash>& paths = {}){
     // string relation; ItemType from, to;
     map<Hash, uint32_t> raw_to_mapped;
     Json::Value root_json = Json::ValueType::objectValue;
@@ -16,13 +132,28 @@
     for(auto iter = nodes.cbegin(); iter != nodes.cend(); iter++){
         const Hash h = iter->first;
         raw_to_mapped[h] = count;
+        auto typeClass = nodes.find(h)->second.typeClass;
         Json::Value node_json;
-        node_json["name"] = "["+iter->second.type+"]: "+iter->second.name;
+        if(iter->second.typeClass == IP_ASS){
+            node_json["name"] = "[" + iter->second.type + "]: " + iter->second.id_str;
+        }
+        else {
+            node_json["name"] = "[" + iter->second.type + "]: " + iter->second.name;
+        }
         node_json["value"] = 1;
         if(centers.find(h) != centers.cend()){
             // root
             node_json["category"] = 0;
-        } else if(iter->second.industry.empty()) {
+        } else if(exceptNodes.find(h) != exceptNodes.cend()){
+            node_json["category"] = 3;
+        } else if(clueNodes.find(h) != clueNodes.cend()){
+            node_json["category"] = 4;
+        }else if(paths.find(h) != paths.cend()){
+            node_json["category"] = 6;
+        }else if(typeClass == IP_ASS || typeClass == CERT_ASS){
+            node_json["category"] = 5;
+        }
+        else if(iter->second.industry.empty()) {
             // normal
             node_json["category"] = 1;
         } else{
@@ -42,7 +173,7 @@
         links_json.append(move(link_json));
     }
     {// categories
-        vector<string> cats = {"root", "normal", "black"};
+        vector<string> cats = {"root", "normal", "black", "excepts", "clues", "ip or cert", "path node"};
         for(const auto &cat_name : cats){
             Json::Value cat = Json::ValueType::objectValue;
             Json::Value empty = Json::ValueType::objectValue;

@@ -5,6 +5,7 @@
 #include <queue>
 #include <random>
 #include <algorithm>
+#include <functional>
 #include <ctime>
 #include <array>
 #include <sstream>
@@ -44,19 +45,6 @@ struct Edge{
 	Edge(T f, T t,int w):from(f),to(t),weight(w){}
 };
 
-enum NodeAssetType{
-    DOMAIN_ASS, IP_ASS, CERT_ASS, OTHERS_ASS
-};
-const static map<string, NodeAssetType> stringToAssetType = {
-        {"Domain", DOMAIN_ASS}, {"IP", IP_ASS},
-        {"Cert", CERT_ASS}, {"Whois_Name", OTHERS_ASS},
-        {"Whois_Phone", OTHERS_ASS}, {"Whois_Email", OTHERS_ASS},
-        {"IP_C", IP_ASS}, {"ASN", OTHERS_ASS},
-};
-const static map<NodeAssetType, string> AssetTypeToString = {
-        {DOMAIN_ASS, "Domain"}, {IP_ASS, "IP"},
-        {CERT_ASS, "Cert"}, {OTHERS_ASS, "OTHERS_ASS"}
-};
 constexpr const uint32_t UNMATCHED = -1;
 class Graph{
 public:
@@ -79,8 +67,52 @@ public:
     [[nodiscard]]size_t numEdges() const {
         return edges.size();
     }
-
-    [[nodiscard]]vector< array<uint32_t,8> > getStatistics(const vector<Hash>centers) const {
+    [[nodiscard]] map<Hash, tuple<uint32_t, NodeAssetType, uint32_t>> getNodeStatistics(const vector<Hash>& centers) const {
+        // return: map[Hash] -> (degree, NodeAssetType, (top: 0, mid: 1, bottom: 2))
+        // for cwd
+        map<Hash, tuple<uint32_t, NodeAssetType, uint32_t>> result;
+        {// get top, mid & bottom
+            vector<uint32_t> reaches;// top mid & bottom
+            reaches.resize(numNodes(), UNMATCHED);
+            vector<tuple<NodeIdType, DepthType>> depthInput;
+            depthInput.reserve(centers.size());
+            for (const auto& nodeHash: centers) {
+                auto nodeID = raw_to_mapped.at(nodeHash);
+                depthInput.emplace_back(make_tuple(nodeID, 0U));
+                reaches[nodeID] = 0;
+            }
+            {
+                const auto depthVec = getDepth(depthInput);
+                assert(depthVec.size() == numNodes());
+                // 0: top,  1: mid, 2: bottom
+                for (uint32_t nodeID = 0; nodeID < numNodes(); nodeID++) {
+                    auto degree = edges.at(nodeID).size();
+                    if (reaches[nodeID] == UNMATCHED) {
+                        if (degree == 1) {
+                            reaches[nodeID] = 2;
+                        } else if (depthVec.at(nodeID) < 2) {
+                            reaches[nodeID] = 1;
+                        } else {
+                            reaches[nodeID] = 2;
+                        }
+                    }
+                }
+            }
+            for(uint32_t nodeID=0; nodeID<numNodes(); nodeID++){
+                Hash h = mapped_to_raw.at(nodeID);
+                auto insertSucc = result.insert(make_pair(h,
+                    make_tuple(
+                        /*degree*/ edges.at(nodeID).size(),
+                        /*NodeAssetType*/ mapped_to_assetType.at(nodeID),
+                        /*reach*/reaches.at(nodeID)
+                    ))).second;
+                assert(insertSucc);
+            }
+        }
+        return result;
+    }
+    [[nodiscard]]vector< array<uint32_t,8> > getStatistics(const vector<Hash>& centers) const {
+        // this function is for lxd
         // array:
         // [0] count; [1] domain; [2] ip; [3] cert;
         // [4] others; [5] top; [6] mid; [7] bottom;
@@ -106,7 +138,7 @@ public:
             depthInput.reserve(centers.size());
             for (const auto& nodeHash: centers) {
                 auto nodeID = raw_to_mapped.at(nodeHash);
-                depthInput.push_back(make_tuple(nodeID, 0U));
+                depthInput.emplace_back(make_tuple(nodeID, 0U));
                 reaches[nodeID] = 0;
             }
             {
@@ -207,8 +239,47 @@ public:
 public:
     using NodeIdType = uint32_t;
     using DepthType = uint32_t;
+    [[nodiscard]] vector<Hash> getShortestPathBetween(Hash node1, Hash node2) const {
+        uint32_t node1ID = raw_to_mapped.at(node1);
+        uint32_t node2ID = raw_to_mapped.at(node2);
+        auto pathMapped = getShortestPathBetween(node1ID, node2ID);
+        vector<Hash> result;
+        for(uint32_t nodeID: pathMapped){
+            result.emplace_back(mapped_to_raw.at(nodeID));
+        }
+        return result;
+    }
+    [[nodiscard]] vector<uint32_t> getShortestPathBetween(uint32_t node1, uint32_t node2) const {
+        // return path from node1 to node2
+        // bfsQueue<nodeID, prevNodeID, nodeDepth>
+        queue<tuple<NodeIdType, NodeIdType, DepthType>> bfsQueue;
+        // result<prevNodeID, nodeDepth>
+        vector<tuple<NodeIdType, DepthType>> result;
+        result.resize(numNodes(), make_tuple(UNMATCHED, UNMATCHED));
+        bfsQueue.emplace(make_tuple(node1, UNMATCHED, 0));
+        while (!bfsQueue.empty()){
+            auto [nodeID, prevNodeID, nodeDepth] = bfsQueue.front();
+            bfsQueue.pop();
+            if(nodeDepth >= get<1>(result[nodeID])) continue;
+            result[nodeID] = make_tuple(prevNodeID, nodeDepth);
+            uint32_t nextDepth = nodeDepth+1;
+            const auto& rootEdges = edges.at(nodeID);
+            for(const auto& edge: rootEdges){
+                uint32_t nextNode = edge.to;
+                if(nextDepth < get<1>(result[nextNode])){
+                    bfsQueue.emplace(make_tuple(nextNode, nodeID, nextDepth));
+                }
+            }
+        }
+        vector<uint32_t> path;
+        for(uint32_t nodeID = node2; nodeID!=UNMATCHED; nodeID = get<0>(result[nodeID])){
+            path.emplace_back(nodeID);
+            cout << "ID = " << nodeID << ", depth = " << get<1>(result[nodeID]) << endl;
+        }
+        std::reverse(path.begin(), path.end());
+        return path;
+    }
     [[nodiscard]]vector<uint32_t> getDepth(const vector<tuple<NodeIdType, DepthType>>& centers) const {
-        cout << "UNMATCHED = " << UNMATCHED << endl;
         set<NodeIdType> centerSet;
         for(const auto& c: centers){
             centerSet.insert(get<0>(c));
@@ -310,15 +381,15 @@ public:
             }
             auto maxFlow = getMaxFlow(root, nodeID);
             cout << maxFlow << " / " << nodeDegreeWeight[nodeID] << endl;
-            if(maxFlow < nodeDegreeWeight[nodeID] * 0.5){
+            if((double)maxFlow < nodeDegreeWeight[nodeID] * 0.5){
                 *ptr = make_tuple(nodeID, 4);
                 cout << "set to 4" << endl;
             }
-            else if(maxFlow < nodeDegreeWeight[nodeID] * 0.8){
+            else if((double)maxFlow < nodeDegreeWeight[nodeID] * 0.8){
                 *ptr = make_tuple(nodeID, 2);
                 cout << "set to 2" << endl;
             }
-            else if(maxFlow > nodeDegreeWeight[nodeID] * 0.9){
+            else if((double)maxFlow > nodeDegreeWeight[nodeID] * 0.9){
                 *ptr = make_tuple(nodeID, 1);
             }
         }
@@ -419,9 +490,18 @@ public:
         return subGraphs;
     }
 public:
-    [[nodiscard]] vector<Hash> divideSubGraphByCenters(const vector<Hash>& centers, int maxNodes) const {
+    [[nodiscard]] vector<Hash> divideSubGraphByCenters(const vector<Hash>& centers, int maxNodes,
+        const function<int(uint32_t/*edge weight*/, bool/*whether black*/, uint32_t/*depth*/)>& weightFunction,
+        const vector<Hash>& exceptNodes = {}) const {
+        /*
+         * @weightFunction (
+         *      @1 uint32_t: edge weight
+         *      @2 bool:     whether black
+         *      @3 uint32_t: depth
+         * )
+         */
         vector<tuple<NodeIdType, DepthType>> depthInput;
-        depthInput.reserve(centers.size());
+        depthInput.reserve(centers.size()+exceptNodes.size());
         auto cmp = [](const tuple<uint32_t, int>&a, const tuple<uint32_t, int>&b)->bool{
             return get<1>(a) > get<1>(b);
         };
@@ -431,6 +511,10 @@ public:
             depthInput.emplace_back(make_tuple(mappedId, 0U));
             bfsQueue.emplace(make_tuple(mappedId, -100000));
         }
+        for(const auto& exceptNode: exceptNodes){
+            uint32_t mapped_id = raw_to_mapped.at(exceptNode);
+            depthInput.emplace_back(make_tuple(mapped_id, (uint32_t)1e5));
+        }
         auto depth = getDepth(depthInput);
         set<uint32_t> resultSet;
         while (resultSet.size() < maxNodes){
@@ -439,7 +523,9 @@ public:
             if(resultSet.insert(nodeID).second){
                 auto edge = edges.at(nodeID);
                 for(const auto& n: edge){
-                    bfsQueue.emplace(make_tuple(n.to, -n.weight+ 10 * mapped_to_black.at(n.to).empty() + (int)25*depth[n.to]));
+                    bfsQueue.emplace(make_tuple(n.to,
+                        weightFunction(n.weight, mapped_to_black.at(n.to).empty(), depth.at(n.to))));
+//                    -n.weight+ 10 * mapped_to_black.at(n.to).empty() + (int)25*depth[n.to];
 //                    bfsQueue.emplace(make_tuple(n.to, -n.weight + (int)25*depth[n.to]));
                 }
             }
@@ -459,14 +545,6 @@ public:
             depthInput.emplace_back(make_tuple(mappedId, 0U));
         }
         auto depth = getDepth(depthInput);
-        auto cmp = [](const tuple<NodeIdType, DepthType>& a, const tuple<NodeIdType, DepthType>& b)->bool{
-            return get<1>(a) > get<1>(b);
-        };
-//        priority_queue<tuple<NodeIdType, DepthType>, vector<tuple<NodeIdType, DepthType>>, decltype(cmp)>
-//                pq(cmp);
-//        for(uint32_t nodeID = 0; nodeID<depth.size(); nodeID++){
-//            pq.emplace(make_pair(nodeID, depth[nodeID]));
-//        }
         vector<Hash> result;
         for(uint32_t nodeID = 0; nodeID<depth.size(); nodeID++){
             if(depth[nodeID] <= maxDepth){
@@ -611,6 +689,24 @@ public:
             ans += dfs(s, MAX_LLD);
         }
         return ans;
+    }
+    static vector<uint32_t> concatPath(const vector<uint32_t>& path1, const vector<uint32_t>& path2){
+        if(path1.empty()) return path2;
+        if(path2.empty()) return path1;
+        assert(path1.back() == path2.at(0));
+        vector<uint32_t> result;
+        result.insert(result.end(), path1.cbegin(), path1.cend());
+        result.insert(result.end(), path2.cbegin()+1, path2.cend());
+        return result;
+    }
+    static vector<Hash> concatPath(const vector<Hash>& path1, const vector<Hash>& path2){
+        if(path1.empty()) return path2;
+        if(path2.empty()) return path1;
+        assert(path1.back() == path2.at(0));
+        vector<Hash> result;
+        result.insert(result.end(), path1.cbegin(), path1.cend());
+        result.insert(result.end(), path2.cbegin()+1, path2.cend());
+        return result;
     }
 };
 
