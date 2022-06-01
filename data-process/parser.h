@@ -162,8 +162,8 @@ const static map<NodeAssetType, string> AssetTypeToString = {
 const static map<NodeAssetType, string> AssetTypeToIcon = {
         {DOMAIN_ASS, "&#xe7ee"}, {IP_ASS, "&#xe55f"},
         {CERT_ASS, "&#xe8e8"}, {NAME_ASS, "&#xea67"},
-        {PHONE_ASS, "#&xe0b0"}, {EMAIL_ASS, "&#xe0be"},
-        {ASN_ASS, "#&xeab1"}, {OTHERS_ASS, "&#xe339"}
+        {PHONE_ASS, "&#xe0b0"}, {EMAIL_ASS, "&#xe0be"},
+        {ASN_ASS, "&#xeab1"}, {OTHERS_ASS, "&#xe339"}
 };
 struct ItemType{
     string name, type, id_str;

@@ -255,7 +255,7 @@ export default {
                     self.subGraphData.pathNodes = pathNodes;
                     // self.subGraphData.layouts = {}
 
-                    console.log(self.subGraphData);
+                    console.log("subGraph:", self.subGraphData);
                 })
                 .catch(function (error) {
                     console.log(error);

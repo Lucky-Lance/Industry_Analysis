@@ -2,9 +2,9 @@
     <v-network-graph :selected-nodes="data.selectedNodes" :nodes="data.nodes" :edges="data.edges"
         v-model:zoom-level="data.zoomLevel" :layouts="data.layouts" :paths="data.paths" :configs="configs"
         :event-handlers="eventHandlers">
-        <template #edge-label="{ edge, ...slotProps }">
+        <!-- <template #edge-label="{ edge, ...slotProps }">
             <v-edge-label :text="edge.label" align="center" vertical-align="above" v-bind="slotProps" />
-        </template>
+        </template> -->
 
         <!-- Use CSS to define references to external fonts.
          To use CSS within SVG, use <defs>. -->
@@ -20,7 +20,7 @@
         <!-- Replace the node component -->
         <template #override-node="{ nodeId, scale, config, ...slotProps }">
             <circle :r="config.radius * scale" :fill="config.color" v-bind="slotProps" />
-            <text font-family="Material Icons" :font-size="22 * scale" fill="#ffffff" text-anchor="middle"
+            <text font-family="Material Icons" :font-size="28 * scale" fill="#3b3b3b" text-anchor="middle"
                 dominant-baseline="central" style="pointer-events: none" v-html="data.nodes[nodeId].icon" />
         </template>
     </v-network-graph>
@@ -79,12 +79,14 @@ export default {
                             width: 32,
                             height: 32,
                             borderRadius: 8,
-                            radius: (node) => node.size,
+                            // radius: (node) => node.size,
+                            radius: 22,
                             color: (node) => node.color,
                             // ["#6aa096", "#1c5fcc", "#2d8515", "#db3934", "#fdb462"]
                         },
                         hover: {
-                            radius: (node) => node.size + 2,
+                            radius: 24,
+                            // radius: (node) => node.size + 2,
                             // color: (node) => node.color,
                         },
                         label: {
@@ -101,7 +103,8 @@ export default {
                     edge: {
                         gap: 12,
                         normal: {
-                            width: (edge) => edge.width, // Use the value of each edge object
+                            // width: (edge) => edge.width, // Use the value of each edge object
+                            width: 2,
                             color: (edge) => edge.color,
                             dasharray: (edge) => (edge.dashed ? "4" : "0"),
                         },
@@ -124,8 +127,8 @@ export default {
                             },
                             target: {
                                 type: "arrow",
-                                width: 4,
-                                height: 4,
+                                width: 2,
+                                height: 2,
                                 margin: -1,
                                 units: "strokeWidth",
                                 color: null,

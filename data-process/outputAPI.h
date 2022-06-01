@@ -80,14 +80,15 @@
             pathItem_json["edges"] = move(pathEdges_json);
             pathItem_json["active"] = false;
             pathItem_json["width"] = 10;
+            paths_json["path"+to_string(count)] = move(pathItem_json);
         }
-        root_json["pathNodes"] = move(paths_json);
+        root_json["paths"] = move(paths_json);
     }
     {// pathNodes
         Json::Value pathNodes_json= Json::ValueType::arrayValue;
         for(const auto& path: paths){
             Json::Value pNodes_json = Json::ValueType::arrayValue;
-            for(Hash h: path){
+            for(const auto& h: path){
                 uint32_t nodeID = raw_to_mapped.at(h);
                 pNodes_json.append("node" + to_string(nodeID+1));
             }
@@ -122,7 +123,13 @@
 [[nodiscard]]string graphToJson_echarts(const vector<LinkItemType>& links, const map<Hash, ItemType>& nodes,
     const set<Hash>& centers, const set<Hash>& exceptNodes = {}, const set<Hash>& clueNodes = {},
     const set<Hash>& paths = {}){
-    // string relation; ItemType from, to;
+    // do some test
+    {
+        for(const auto& h: centers) assert(nodes.find(h) != nodes.cend());
+        for(const auto& h: exceptNodes) assert(nodes.find(h) != nodes.cend());
+        for(const auto& h: clueNodes) assert(nodes.find(h) != nodes.cend());
+        for(const auto& h: paths) assert(nodes.find(h) != nodes.cend());
+    }
     map<Hash, uint32_t> raw_to_mapped;
     Json::Value root_json = Json::ValueType::objectValue;
     Json::Value categories_json = Json::ValueType::arrayValue;
@@ -145,6 +152,7 @@
             // root
             node_json["category"] = 0;
         } else if(exceptNodes.find(h) != exceptNodes.cend()){
+            clog << h.str << endl;
             node_json["category"] = 3;
         } else if(clueNodes.find(h) != clueNodes.cend()){
             node_json["category"] = 4;

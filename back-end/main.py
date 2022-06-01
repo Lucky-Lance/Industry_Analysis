@@ -1,4 +1,5 @@
 from calendar import c
+import imp
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pandas import DataFrame
@@ -8,15 +9,20 @@ import json, uvicorn
 from typing import Union, List, Mapping
 from copy import deepcopy
 
+from get_right_down_data import get_right_down_data
+from get_mainGraphData import get_main_data
+
 app = FastAPI()
 # cross-origin resource sharing
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
                    allow_headers=["*"],)
 
-mainGraphData = json.load(open("./data/mainGraphData.json", "r"))
-subGraphData = json.load(open("./data/subGraphData.json", "r"))
+# mainGraphData = json.load(open("./data/mainGraphData.json", "r"))
+# subGraphData = json.load(open("./data/subGraphData.json", "r"))
+subGraphData = json.load(open("./data/all_data.json", "r"))
 tableData = json.load(open("./data/tableData.json", "r", encoding='utf=8'))
-rightDownCharData = json.load(open("./data/rightDownCharData.json", "r"))
+# rightDownCharData = json.load(open("./data/rightDownCharData.json", "r"))
+rightDownCharData = get_right_down_data('./data/all_data.json')
 abstractData = json.load(open("./data/abstractData.json", "r", encoding='utf=8'))
 
 
@@ -26,8 +32,9 @@ def read_root():
 
 @app.get("/mainGraphData")
 def read_mainGraphData():
-    return mainGraphData
-    
+    # return mainGraphData
+    return get_main_data()
+
 @app.get("/subGraphData/{id}")
 def read_subGraphData(id: int):
     return subGraphData[str(id)]
@@ -43,7 +50,7 @@ def read_tableData(id: int):
                 "Path ID": i + 1,
                 "Start Node": nodes[path[0]]["name"],
                 "End Node": nodes[path[-1]]["name"],
-                "Length": len(path)
+                "Length": len(path) - 1
             }
         )
     return table

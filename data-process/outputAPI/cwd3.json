@@ -9307,7 +9307,7 @@
 		"node233" : 
 		{
 			"color" : "#dc143c",
-			"icon" : "#&xe0b0",
+			"icon" : "&#xe0b0",
 			"name" : "N233",
 			"size" : 16
 		},
@@ -10917,7 +10917,7 @@
 		"node440" : 
 		{
 			"color" : "#6495ed",
-			"icon" : "#&xe0b0",
+			"icon" : "&#xe0b0",
 			"name" : "N440",
 			"size" : 13
 		},
@@ -12282,7 +12282,7 @@
 		"node616" : 
 		{
 			"color" : "#6495ed",
-			"icon" : "#&xeab1",
+			"icon" : "&#xeab1",
 			"name" : "N616",
 			"size" : 13
 		},
@@ -12597,7 +12597,7 @@
 		"node657" : 
 		{
 			"color" : "#dc143c",
-			"icon" : "#&xe0b0",
+			"icon" : "&#xe0b0",
 			"name" : "N657",
 			"size" : 16
 		},
@@ -18693,5 +18693,26 @@
 			"node340",
 			"node476"
 		]
-	]
+	],
+	"paths" : 
+	{
+		"path1" : 
+		{
+			"active" : false,
+			"edges" : 
+			[
+				"edge1021",
+				"edge1016",
+				"edge714",
+				"edge713",
+				"edge306",
+				"edge307",
+				"edge1022",
+				"edge1022",
+				"edge428",
+				"edge426"
+			],
+			"width" : 10
+		}
+	}
 }

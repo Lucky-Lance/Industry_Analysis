@@ -137,11 +137,12 @@
                 let doubleClick = (params) => {
                     if (params.nodes.length != 0) {//确定为节点双击事件
                         var click_node_id = params.nodes[0];
-                        if (+click_node_id === 1)
-                            this.$emit("choose_graph_id", 0);
-                        else
-                            this.$emit("choose_graph_id", 1);
-                        console.log("click:", click_node_id);
+                        // if (+click_node_id === 1)
+                        //     this.$emit("choose_graph_id", 0);
+                        // else
+                        //     this.$emit("choose_graph_id", 1);
+                        console.log("click:", (click_node_id - 1)/5 );
+                        this.$emit("choose_graph_id", (click_node_id - 1)/5);
                         this.remove_all_sub_nodes(click_node_id, allNodes);
                         
                     }
@@ -157,7 +158,7 @@
                 });
 
                 //todo  悬停在边上--显示弹框
-                this.network.on('hoverEdge', hoverEdge);
+                // this.network.on('hoverEdge', hoverEdge);
                 
                 //todo  从边上移开---隐藏弹框
                 this.network.on('blurEdge', function () {

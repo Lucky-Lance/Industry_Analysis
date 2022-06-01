@@ -240,6 +240,17 @@ public:
     using NodeIdType = uint32_t;
     using DepthType = uint32_t;
     [[nodiscard]] vector<Hash> getShortestPathBetween(Hash node1, Hash node2) const {
+        // do some check
+        {
+            if(raw_to_mapped.find(node1) == raw_to_mapped.cend()){
+                cerr << node1.str << endl;
+                exit(1);
+            }
+            if(raw_to_mapped.find(node2) == raw_to_mapped.cend()){
+                cerr << node2.str << endl;
+                exit(1);
+            }
+        }
         uint32_t node1ID = raw_to_mapped.at(node1);
         uint32_t node2ID = raw_to_mapped.at(node2);
         auto pathMapped = getShortestPathBetween(node1ID, node2ID);
@@ -500,6 +511,13 @@ public:
          *      @3 uint32_t: depth
          * )
          */
+        // make some tests
+        for(const auto& h: centers){
+            assert(raw_to_mapped.find(h) != raw_to_mapped.cend());
+        }
+        for(const auto& h: exceptNodes){
+            assert(raw_to_mapped.find(h) != raw_to_mapped.cend());
+        }
         vector<tuple<NodeIdType, DepthType>> depthInput;
         depthInput.reserve(centers.size()+exceptNodes.size());
         auto cmp = [](const tuple<uint32_t, int>&a, const tuple<uint32_t, int>&b)->bool{

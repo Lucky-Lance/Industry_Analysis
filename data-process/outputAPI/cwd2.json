@@ -9677,7 +9677,7 @@
 		"node123" : 
 		{
 			"color" : "#0000cd",
-			"icon" : "#&xeab1",
+			"icon" : "&#xeab1",
 			"name" : "N123",
 			"size" : 10
 		},
@@ -11133,7 +11133,7 @@
 		"node310" : 
 		{
 			"color" : "#6495ed",
-			"icon" : "#&xeab1",
+			"icon" : "&#xeab1",
 			"name" : "N310",
 			"size" : 13
 		},
@@ -14360,5 +14360,20 @@
 			"node18",
 			"node251"
 		]
-	]
+	],
+	"paths" : 
+	{
+		"path1" : 
+		{
+			"active" : false,
+			"edges" : 
+			[
+				"edge12",
+				"edge11",
+				"edge52",
+				"edge50"
+			],
+			"width" : 10
+		}
+	}
 }
