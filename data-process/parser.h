@@ -115,7 +115,7 @@ struct Hash{
     uint64_t hash1, hash2;
     string str;
     Hash():hash1(0U), hash2(0U){}
-    Hash(const string& s):str(s){
+    explicit Hash(const string& s):str(s){
         hash1 = hash2 = 0U;
         for(char c: s){
             hash1 = ((hash1 * maxLen + transform(c))%mod1);
