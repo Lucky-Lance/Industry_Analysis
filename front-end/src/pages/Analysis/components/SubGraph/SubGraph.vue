@@ -1,29 +1,34 @@
 <template>
-    <v-network-graph :selected-nodes="data.selectedNodes" :nodes="data.nodes" :edges="data.edges"
-        v-model:zoom-level="data.zoomLevel" :layouts="data.layouts" :paths="data.paths" :configs="configs"
-        :event-handlers="eventHandlers">
-        <!-- <template #edge-label="{ edge, ...slotProps }">
+    <div>
+        <div id="legend" style="text-align: center;" v-show="!checked">
+
+        </div>
+        <v-network-graph :selected-nodes="data.selectedNodes" :nodes="data.nodes" :edges="data.edges"
+            v-model:zoom-level="data.zoomLevel" :layouts="data.layouts" :paths="data.paths" :configs="configs"
+            :event-handlers="eventHandlers">
+            <!-- <template #edge-label="{ edge, ...slotProps }">
             <v-edge-label :text="edge.label" align="center" vertical-align="above" v-bind="slotProps" />
         </template> -->
 
-        <!-- Use CSS to define references to external fonts.
+            <!-- Use CSS to define references to external fonts.
          To use CSS within SVG, use <defs>. -->
-        <defs>
-            <component is="style">
-                @font-face { font-family: 'Material Icons'; font-style: normal;
-                font-weight: 400; src:
-                url(https://fonts.gstatic.com/s/materialicons/v97/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2)
-                format('woff2'); }
-            </component>
-        </defs>
+            <defs>
+                <component is="style">
+                    @font-face { font-family: 'Material Icons'; font-style: normal;
+                    font-weight: 400; src:
+                    url(https://fonts.gstatic.com/s/materialicons/v97/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2)
+                    format('woff2'); }
+                </component>
+            </defs>
 
-        <!-- Replace the node component -->
-        <template #override-node="{ nodeId, scale, config, ...slotProps }">
-            <circle :r="config.radius * scale" :fill="config.color" v-bind="slotProps" />
-            <text font-family="Material Icons" :font-size="28 * scale" fill="#3b3b3b" text-anchor="middle"
-                dominant-baseline="central" style="pointer-events: none" v-html="data.nodes[nodeId].icon" />
-        </template>
-    </v-network-graph>
+            <!-- Replace the node component -->
+            <template #override-node="{ nodeId, scale, config, ...slotProps }">
+                <circle :r="config.radius * scale" :fill="config.color" v-bind="slotProps" />
+                <text font-family="Material Icons" :font-size="28 * scale" fill="#3b3b3b" text-anchor="middle"
+                    dominant-baseline="central" style="pointer-events: none" v-html="data.nodes[nodeId].icon" />
+            </template>
+        </v-network-graph>
+    </div>
 </template>
 
 
@@ -31,6 +36,13 @@
 import { ref, reactive, toRaw } from "vue";
 import * as vNG from "v-network-graph";
 import { ForceLayout } from "v-network-graph/lib/force-layout";
+import * as d3 from "d3";
+
+// let color_map = {
+//     "#677adc": "#e4585b",
+//     "#ee8fe3": "#f9e996",
+//     "#adde79": "#95caa3",
+// }
 
 export default {
     name: "SubGraph",
@@ -145,10 +157,74 @@ export default {
                         },
                     },
                 })
-            )
+            ),
+
         }
     },
-    props: ["data"]
+    props: ["data", "checked"],
+    mounted() {
+        this.draw("#legend");
+    },
+    methods: {
+        draw: function (id) {
+            let lD = [
+                { type: "黄色" },
+                { type: "赌博" },
+                { type: "诈骗" },
+                { type: "贩毒" },
+                { type: "贩枪" },
+                { type: "黑客" },
+                { type: "交易平台" },
+                { type: "支付平台" },
+                { type: "未知" }
+            ];
+
+            let segColor = {
+                "黄色": "#f9e996",
+                "赌博": "#5886b7",
+                "诈骗": "#95caa3",
+                "贩毒": "#be4a4c",
+                "贩枪": "#ffa807",
+                "黑客": "#6e6efd",
+                "交易平台": "#eb7df4",
+                "支付平台": "#ad85e4",
+                "未知": "#FFFFFF",
+
+            };
+
+            // create table for legend.
+            let legend = d3.select(id)
+                .append("table").attr('class', 'legend');
+
+            // create one row per segment.
+            let tr = legend.append("tbody").selectAll("tr").data(lD)
+                .enter().append("tr")
+                // .style("width", "115px")
+                .style("white-space", "nowrap")
+                .style("display", "inline-block");
+
+            // create the first column for each segment.
+            tr.append("td").append("svg").attr("width", '16').attr("height", '16').attr('rx', '3').attr('ry', '3').append("rect")
+                .attr("width", '16').attr("height", '16').attr('rx', '3').attr('ry', '3')
+                .attr("fill", function (d) { return segColor[d.type] });
+
+            // create the second column for each segment.
+            tr.append("td").text(function (d) { return d.type; });
+        }
+    },
+    watch: {
+        checked(newValue, oldValue) {
+            console.log("change color");
+            // console.log(this.configs);
+
+            if (newValue) {
+                this.configs.node.normal.color = (node) => node.color;
+            }
+            else {
+                this.configs.node.normal.color = (node) => node.black_color;
+            }
+        }
+    }
 }
 
 </script>

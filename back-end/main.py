@@ -11,6 +11,7 @@ from copy import deepcopy
 
 from get_right_down_data import get_right_down_data
 from get_mainGraphData import get_main_data
+from get_abstractData import get_abstract_data
 
 app = FastAPI()
 # cross-origin resource sharing
@@ -23,7 +24,8 @@ subGraphData = json.load(open("./data/all_data.json", "r"))
 tableData = json.load(open("./data/tableData.json", "r", encoding='utf=8'))
 # rightDownCharData = json.load(open("./data/rightDownCharData.json", "r"))
 rightDownCharData = get_right_down_data('./data/all_data.json')
-abstractData = json.load(open("./data/abstractData.json", "r", encoding='utf=8'))
+# abstractData = json.load(open("./data/abstractData.json", "r", encoding='utf=8'))
+abstractData = get_abstract_data('./data/all_data.json')
 
 
 @app.get("/")

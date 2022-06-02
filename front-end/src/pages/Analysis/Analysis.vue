@@ -2,7 +2,7 @@
     <div class="visits-page">
         <h1 class="page-title">黑灰产元网络 &nbsp;
             <small>
-                <small>The meta network</small>
+                <small>The Meta Network</small>
             </small>
         </h1>
         <b-row>
@@ -22,7 +22,15 @@
         <b-row>
             <b-col lg="8" xs="12">
                 <Widget title="<h5>黑产子网<span class='fw-semi-bold'>&nbsp;结构图</span></h5" customHeader>
-                    <sub-graph v-for="(item, index) in subgraphs" :key="index" :data="subGraphData" />
+                    <div>
+                        <b-form-checkbox v-model="checked" name="check-button" switch>
+                            配色方案：
+                            <b v-if="checked">节点类型</b>
+                            <b v-else="checked">产业类型</b>
+                        </b-form-checkbox>
+                    </div>
+                    <sub-graph v-for="(item, index) in subgraphs" :key="index" :data="subGraphData"
+                        :checked="checked" />
                 </Widget>
             </b-col>
             <b-col lg="4" xs="12">
@@ -71,6 +79,7 @@ export default {
     data() {
         return {
             currentGraphID: 0,
+            checked: true,
             mainGraphData: {
                 "allNodes": [],
                 "allEdges": []
@@ -137,8 +146,6 @@ export default {
                     this.subGraphData.edges[edge]["width"] += 4;
                 }
             }
-            console.log(this.subGraphData.nodes);
-
         });
 
         this.$bus.$on('restore', (filter) => {
@@ -222,12 +229,38 @@ export default {
                     let res = response.data;
                     console.log(res);
                     self.subGraphData.nodes = res.nodes;
+
+                    // add "black" color
+                    // console.log("Black");
+                    let color_map = {
+                        // "": "#ffffff",
+                        "A": "#f9e996",
+                        "B": "#5886b7",
+                        "C": "#95caa3",
+                        "D": "#be4a4c",
+                        "E": "#ffa807",
+                        "F": "#6e6efd",
+                        "G": "#eb7df4",
+                        "H": "#ad85e4",
+                    }
+                    for (let node in self.subGraphData.nodes) {
+                        let type = res.nodesProp[node].black;
+                        // console.log(type.length);
+                        if (type.length > 1)
+                            type = type.substring(0, 1);
+                        let color = "#ffffff";
+                        if (type in color_map)
+                            color = color_map[type];
+                        self.subGraphData.nodes[node]["black_color"] = color;
+                    }
+                    // console.log(self.subGraphData.nodes);
+
                     self.subGraphData.edges = res.edges;
                     self.subGraphData.layouts = res.layouts;
                     self.subGraphData.selectedNodes = ref([]);
 
                     self.subGraphData.nodesProp = res.nodesProp;
-                    self.subGraphData.zoomLevel = 0.5;
+                    self.subGraphData.zoomLevel = res.zoomlevel;
 
                     // initialize slots
                     if (subgraph_init) {
@@ -286,6 +319,7 @@ export default {
     watch: {
         currentGraphID(newID, oldID) {
             console.log(this.currentGraphID);
+            this.checked = true;
             this.getAbstractData(newID);
             this.getTableData(newID);
             this.getSubGraph(newID);
@@ -295,7 +329,6 @@ export default {
 
 };
 </script>
-
 
 
 <style src="./Analysis.scss" lang="scss"/>

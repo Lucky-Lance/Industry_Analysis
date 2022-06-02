@@ -10,7 +10,10 @@
     {
         for(const auto& p: paths){
             for(const Hash& h: p){
-                assert(nodes.find(h) != nodes.cend());
+                if(nodes.find(h) == nodes.cend()){
+                    DEBUG;
+                    exit(1);
+                }
             }
         }
     }
@@ -113,6 +116,12 @@
             nodesPropItem_json["degree"] = get<0>(nodeStatistic);
             nodesPropItem_json["type"] = AssetTypeToString.at(get<1>(nodeStatistic));
             nodesPropItem_json["pos"] = uint_to_reachString.at(get<2>(nodeStatistic));
+            nodesPropItem_json["black"] = [](const vector<char>& black)->string{
+                string result = {};
+                for(char b: black) result += b;
+                return result;
+            }(iter->second.industry);
+            nodesPropItem_json["name"] = iter->first.str;
             nodesProp_json["node"+ to_string(nodeID+1)] = move(nodesPropItem_json);
         }
         root_json["nodesProp"] = move(nodesProp_json);

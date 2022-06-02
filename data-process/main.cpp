@@ -4,6 +4,7 @@
 #include "randomOutputAPI.h"
 #include <filesystem>
 #include "givenGroups.h"
+#define ADD_JSON
 void finalGroup2(){
     string name = __FUNCTION__;
     vector<Hash> centers = {
@@ -194,6 +195,7 @@ void myGroup1(bool buildFromScratch){
             group1Graph.getNodeStatistics(centers)
                 );
     }
+    return;
     {// echarts
             ofstream f;
             string fileName = name + "-" + to_string(maxNodes) + ".json";
@@ -298,6 +300,7 @@ void myGroup2(bool buildFromScratch){
                              group1Graph.getNodeStatistics(centers)
         );
     }
+    return;
     {// echarts
         ofstream f;
         string fileName = name + "-" + to_string(maxNodes) + ".json";
@@ -410,6 +413,7 @@ void myGroup3(bool buildFromScratch){
                              group1Graph.getNodeStatistics(centers)
         );
     }
+    return;
     {// echarts
         ofstream f;
         string fileName = name + "-" + to_string(maxNodes) + ".json";
@@ -514,6 +518,7 @@ void myGroup4(bool buildFromScratch){
                              group1Graph.getNodeStatistics(centers)
         );
     }
+    return;
     {// echarts
         ofstream f;
         string fileName = name + "-" + to_string(maxNodes) + ".json";
@@ -532,6 +537,113 @@ void myGroup4(bool buildFromScratch){
         f.close();
     }
 }
+void myGroup5(bool buildFromScratch){
+    string name = __FUNCTION__;
+    vector<Hash> centers = {
+            Hash("fd0a3f6712ff520edae7e554cb6dfb4bdd2af1e4a97a39ed9357b31b6888b4af"), // phone clue
+            Hash("21ce145cae6730a99300bf677b83bbe430cc0ec957047172e73659372f0031b8"), // IP clue
+            Hash("7939d01c5b99c39d2a0f2b418f6060b917804e60c15309811ef4059257c0818a"), // Domain clue
+            Hash("0309f1abfd871888adb8551c23225dd5aa1c8016e1154c6901825c0c3332d71d"), // Domain clue
+    };
+    vector<Hash> clues = {
+            Hash("587da0bac152713947db682a5443ef639e35f77a3b59e246e8a07c5eccae67e5"), // Domain clue
+    };
+    vector<Hash> exceptButInclude = {
+        Hash("9c5b18b19c13d7df75e7f8a28346bea108e04a889b9ac381ff3df31df3692561"),
+        Hash("0309f1abfd871888adb8551c23225dd5aa1c8016e1154c6901825c0c3332d71d"), // Domain clue
+    };
+    vector<Hash> excepts = {
+
+    };
+    vector<Hash> exceptAll(excepts.cbegin(), excepts.cend());
+    exceptAll.insert(exceptAll.end(), exceptButInclude.cbegin(), exceptButInclude.cend());
+    vector<Hash> pathByHand = {
+            Hash("7939d01c5b99c39d2a0f2b418f6060b917804e60c15309811ef4059257c0818a"), // Domain clue
+            Hash("fd0a3f6712ff520edae7e554cb6dfb4bdd2af1e4a97a39ed9357b31b6888b4af"), // phone clue
+            Hash("21ce145cae6730a99300bf677b83bbe430cc0ec957047172e73659372f0031b8"), // IP clue
+            Hash("0309f1abfd871888adb8551c23225dd5aa1c8016e1154c6901825c0c3332d71d"), // Domain clue
+    };
+    Graph subGraph;
+    map<Hash, ItemType > subNodes;
+    vector<tuple<string, Hash, Hash>> subLinks;
+    if(buildFromScratch) {
+        auto links = linkReader(sourceLinkName.string());
+        auto nodes = nodeReader(sourceNodeName.string());
+        Graph graph;
+        graph.insert(links, nodes);
+        auto subGraphVec = graph.divideSubGraphByDepth(centers, 4);
+        tie(subNodes, subLinks) = getSubGraph(nodes, links, subGraphVec);
+        outputGraph(subNodes, subLinks, tuple<string, string>(
+                (outputPath / (name+"-Node.csv")).string(),
+                (outputPath / (name+"-Link.csv")).string()
+        ));
+        cout << "node size = " << subNodes.size() << endl;
+        subGraph.insert(subLinks, subNodes);
+    }
+    else{
+        auto subLinkName = outputPath / (name+"-Link.csv");
+        auto subNodeName = outputPath / (name+"-Node.csv");
+        subLinks = linkReader(subLinkName.string());
+        subNodes = nodeReader(subNodeName.string());
+        subGraph.insert(subLinks, subNodes);
+    }
+    int maxNodes = 1500;// 150 is ok
+    auto group1Vec = subGraph.divideSubGraphByCenters(centers, maxNodes, [](uint32_t edgeWeight, bool hasBlack,
+                                                                            uint32_t depth) -> int {
+//            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
+        return 25 * (int) depth;
+    }, exceptAll);
+    group1Vec.insert(group1Vec.end(), exceptButInclude.cbegin(), exceptButInclude.cend());
+    group1Vec.insert(group1Vec.end(), clues.cbegin(), clues.cend());
+    auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
+    Graph group1Graph;
+    group1Graph.insert(group1Links, group1Nodes);
+    vector<Hash> path;
+    DEBUG
+    if(!pathByHand.empty())
+        for(size_t i=0; i<pathByHand.size()-1; i++){
+            auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
+            path = Graph::concatPath(path, pathi);
+        }
+    DEBUG
+    if(!pathByHand.empty())
+    {
+        // cwd json
+        ofstream f;
+        string fileName = "cwd5.json";
+        f.open(outputAPIPath/fileName, ios::out);
+        if(!f.good()){
+            DEBUG
+            cerr << "open file '" << outputAPIPath/fileName << "' error!" << endl;
+            exit(1);
+        }
+        cout << "output to '" << outputAPIPath/fileName << "'" << endl;
+
+        f << graphToJson_cwd(group1Links, group1Nodes,
+                             vector<vector<Hash>>{path},
+                             group1Graph.getNodeStatistics(centers)
+        );
+    }
+
+    {// echarts
+        ofstream f;
+        string fileName = name + ".json";
+        f.open(outputPath / fileName, ios::out);
+        if (!f.good()) {
+            cerr << "open file error!" << endl;
+            DEBUG;
+            exit(1);
+        }
+        cout << "output to '" << outputPath / fileName << "'." << endl;
+        f << graphToJson_echarts(group1Links, group1Nodes,
+                                 set<Hash>(centers.cbegin(), centers.cend()),
+                                 set<Hash>(exceptAll.cbegin(), exceptAll.cend()),
+                                 set<Hash>(clues.cbegin(), clues.cend()),
+                                 set<Hash>(path.cbegin(), path.cend()));
+        f.close();
+    }
+}
+
 void myGroup6(bool buildFromScratch){
     string name = __FUNCTION__;
     vector<Hash> centers = {
@@ -682,6 +794,8 @@ void myGroup6(bool buildFromScratch){
                              group1Graph.getNodeStatistics(centers)
         );
     }
+    return;
+
     {// echarts
         ofstream f;
         string fileName = name + ".json";
@@ -900,6 +1014,8 @@ void myGroup8(bool buildFromScratch){
                              group1Graph.getNodeStatistics(centers)
         );
     }
+    return;
+
     {// echarts
         ofstream f;
         string fileName = name + ".json";
@@ -921,13 +1037,20 @@ void myGroup8(bool buildFromScratch){
 void myGroup9(bool buildFromScratch){
     string name = __FUNCTION__;
     vector<Hash> centers = {
-
+        Hash("2ecbab579fa0523913c5b56ca5a02dda98f0cdc12153c79a81a93d2560cdf202"), // IP
+        Hash("9032204fc475b809ea02a4ffc7e682660892d9e9d23b7b1777d0b4f0e9a0a656"), // Cert
+        Hash("37f7ed5739b43757ff23c712ae4d60d16615c59c0818bf5f2c91514c9c695845"), // IP
+        Hash("9ace6aae20e3ac6d9ebfae8938b91112460b27ad204cf11f1301f154c5d309a4"), // Cert
     };
     vector<Hash> clues = {
 
     };
     vector<Hash> exceptButInclude = {
-
+        Hash("6399042623e54e0439705fde4e655b85e0beef20bc18e9eea628bbe6278f71f8"), // CIDR
+        Hash("3bc5b0706c3df8182f7784cafa0bd864c4a6d432266863609f1f5c22c47fa04b"), // ASN
+        Hash("a91593a45b6eceaae2a0478cc243543184d325720bc3f19f91982450b6af57e2"), // Cert
+        Hash("a7d8a0fd3e3f2c01e5e82a8f894208d756b8d612d4926c1eff5bfd76e4e33cad"), // ASN
+        Hash("7f8392f3c34ce8ad1c7fefb44b43b221218679f9ebf77d557cf86dcd7b4e57ca"), // IP
     };
     vector<Hash> excepts = {
 
@@ -935,7 +1058,10 @@ void myGroup9(bool buildFromScratch){
     vector<Hash> exceptAll(excepts.cbegin(), excepts.cend());
     exceptAll.insert(exceptAll.end(), exceptButInclude.cbegin(), exceptButInclude.cend());
     vector<Hash> pathByHand = {
-
+            Hash("2ecbab579fa0523913c5b56ca5a02dda98f0cdc12153c79a81a93d2560cdf202"), // IP
+            Hash("37f7ed5739b43757ff23c712ae4d60d16615c59c0818bf5f2c91514c9c695845"), // IP
+            Hash("9ace6aae20e3ac6d9ebfae8938b91112460b27ad204cf11f1301f154c5d309a4"), // Cert
+            Hash("9032204fc475b809ea02a4ffc7e682660892d9e9d23b7b1777d0b4f0e9a0a656"), // Cert
     };
     Graph subGraph;
     map<Hash, ItemType > subNodes;
@@ -998,6 +1124,118 @@ void myGroup9(bool buildFromScratch){
                              group1Graph.getNodeStatistics(centers)
         );
     }
+    return;
+
+    {// echarts
+        ofstream f;
+        string fileName = name + ".json";
+        f.open(outputPath / fileName, ios::out);
+        if (!f.good()) {
+            cerr << "open file error!" << endl;
+            DEBUG;
+            exit(1);
+        }
+        cout << "output to '" << outputPath / fileName << "'." << endl;
+        f << graphToJson_echarts(group1Links, group1Nodes,
+                                 set<Hash>(centers.cbegin(), centers.cend()),
+                                 set<Hash>(exceptAll.cbegin(), exceptAll.cend()),
+                                 set<Hash>(clues.cbegin(), clues.cend()),
+                                 set<Hash>(path.cbegin(), path.cend()));
+        f.close();
+    }
+}
+void myGroup10(bool buildFromScratch){
+    string name = __FUNCTION__;
+    vector<Hash> centers = {
+        Hash("86950e571afe16fcb26d8f92f2755d680db61b23e2f7860d556fd3bd453af73a"), // who is email
+        Hash("ad3dc0f33b17ab078a699a1d4da174b1c04aa05de2a1f86cdf8201ea5a61df06"), // IP
+        Hash("39556403ae78c680d562e85f114f3aca7130a0c073f414ed4e45a0928e2d942b"), // IP
+        Hash("48c5d40dbf20b05bca7ff297c234ccfcb17921b7d4e98258f3f52af60952bdb2"), // IP
+        Hash("c8b8f7928d919ef75276fc12a3f3df5283988d9ff1da465703d08f1f5c8a085e"), // name
+        Hash("6d80632c6ec33f958ffd99a4efca49eee4df74d507d415952f38d169ac27438b"), // IP
+    };
+    vector<Hash> clues = {
+
+    };
+    vector<Hash> exceptButInclude = {
+
+    };
+    vector<Hash> excepts = {
+
+    };
+    vector<Hash> exceptAll(excepts.cbegin(), excepts.cend());
+    exceptAll.insert(exceptAll.end(), exceptButInclude.cbegin(), exceptButInclude.cend());
+    vector<Hash> pathByHand = {
+            Hash("ad3dc0f33b17ab078a699a1d4da174b1c04aa05de2a1f86cdf8201ea5a61df06"), // IP
+            Hash("48c5d40dbf20b05bca7ff297c234ccfcb17921b7d4e98258f3f52af60952bdb2"), // IP
+            Hash("86950e571afe16fcb26d8f92f2755d680db61b23e2f7860d556fd3bd453af73a"), // who is email
+            Hash("39556403ae78c680d562e85f114f3aca7130a0c073f414ed4e45a0928e2d942b"), // IP
+            Hash("c8b8f7928d919ef75276fc12a3f3df5283988d9ff1da465703d08f1f5c8a085e"), // name
+            Hash("6d80632c6ec33f958ffd99a4efca49eee4df74d507d415952f38d169ac27438b"), // IP
+    };
+    Graph subGraph;
+    map<Hash, ItemType > subNodes;
+    vector<tuple<string, Hash, Hash>> subLinks;
+    if(buildFromScratch) {
+        auto links = linkReader(sourceLinkName.string());
+        auto nodes = nodeReader(sourceNodeName.string());
+        Graph graph;
+        graph.insert(links, nodes);
+        auto subGraphVec = graph.divideSubGraphByDepth(centers, 4);
+        tie(subNodes, subLinks) = getSubGraph(nodes, links, subGraphVec);
+        outputGraph(subNodes, subLinks, tuple<string, string>(
+                (outputPath / (name+"-Node.csv")).string(),
+                (outputPath / (name+"-Link.csv")).string()
+        ));
+        cout << "node size = " << subNodes.size() << endl;
+        subGraph.insert(subLinks, subNodes);
+    }
+    else{
+        auto subLinkName = outputPath / (name+"-Link.csv");
+        auto subNodeName = outputPath / (name+"-Node.csv");
+        subLinks = linkReader(subLinkName.string());
+        subNodes = nodeReader(subNodeName.string());
+        subGraph.insert(subLinks, subNodes);
+    }
+    int maxNodes = 800;// 150 is ok
+    auto group1Vec = subGraph.divideSubGraphByCenters(centers, maxNodes, [](uint32_t edgeWeight, bool hasBlack,
+                                                                            uint32_t depth) -> int {
+//            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
+        return 25 * (int) depth;
+    }, exceptAll);
+    group1Vec.insert(group1Vec.end(), exceptButInclude.cbegin(), exceptButInclude.cend());
+    group1Vec.insert(group1Vec.end(), clues.cbegin(), clues.cend());
+    auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
+    Graph group1Graph;
+    group1Graph.insert(group1Links, group1Nodes);
+    vector<Hash> path;
+    DEBUG
+    if(!pathByHand.empty())
+        for(size_t i=0; i<pathByHand.size()-1; i++){
+            auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
+            path = Graph::concatPath(path, pathi);
+        }
+    DEBUG
+    if(!pathByHand.empty())
+    {
+        // cwd json
+        ofstream f;
+        string fileName = "cwd10.json";
+        f.open(outputAPIPath/fileName, ios::out);
+        if(!f.good()){
+            DEBUG
+            cerr << "open file '" << outputAPIPath/fileName << "' error!" << endl;
+            exit(1);
+        }
+        cout << "output to '" << outputAPIPath/fileName << "'" << endl;
+
+        f << graphToJson_cwd(group1Links, group1Nodes,
+                             vector<vector<Hash>>{path},
+                             group1Graph.getNodeStatistics(centers)
+        );
+    }
+    return;
+
     {// echarts
         ofstream f;
         string fileName = name + ".json";
@@ -1021,7 +1259,7 @@ int main(){
 //    myGroup1(0);
 //    myGroup2(0);
 //    myGroup3(0);
-    myGroup9(1);
+    myGroup5(0);
 //    auto outputStatistics = [](const array<uint32_t, 8>& statistic)->string{
 //        return string("count: ") + to_string(statistic[0])+
 //        string(", Domain: ") + to_string(statistic[1])+

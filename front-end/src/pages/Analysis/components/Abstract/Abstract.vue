@@ -43,12 +43,12 @@
             <h6 class="name">核心资产占比</h6>
             <p></p>
             <!-- <p class="description deemphasize mb-xs">Average Bitrate</p> -->
-            <b-progress variant="success" :value="data.corePercent" :max="100" class="progress-xs" />
+            <b-progress variant="success" :value="data.corePercent" :max="50" class="progress-xs" />
         </div>
         <div class="col-3 text-center">
             <span class="status rounded rounded-lg bg-widget mt-lg-0 mt-4">
                 <span>
-                    <AnimatedNumber :value="data.corePercent" v-bind="animateNumberOptions"></AnimatedNumber>%
+                    <AnimatedNumber :value="data.corePercent" v-bind="animateNumberOptions"></AnimatedNumber>‰
                 </span>
             </span>
         </div>

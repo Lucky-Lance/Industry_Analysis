@@ -62,7 +62,7 @@ export default {
            
             var barColor = 'steelblue';
             // function segColor(c) { return { Domain: "#807dba", IP: "#e08214", Cert: "#41ab5d", ASN: "#E80000", Top: "#807dba", Mid: "#e08214", Bot: "#41ab5d" }[c]; }
-            function segColor(c) { return { Domain: "#5886b7", IP: "#f9e996", Cert: "#95caa3", ASN: "#be4a4c", Top: "#5886b7", Mid: "#f9e996", Bot: "#95caa3" }[c]; }
+            function segColor(c) { return { Domain: "#5886b7", IP: "#f9e996", Cert: "#95caa3", ASN: "#be4a4c", Top: "#be4a4c", Mid: "#f9e996", Bot: "#95caa3" }[c]; }
 
             // compute total for each state.
             fData.forEach(function (d) { d.total = d.freq.Domain + d.freq.IP + d.freq.Cert + d.freq.ASN; });
