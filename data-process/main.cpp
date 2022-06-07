@@ -5,108 +5,7 @@
 #include <filesystem>
 #include "givenGroups.h"
 #define ADD_JSON
-void finalGroup2(){
-    string name = __FUNCTION__;
-    vector<Hash> centers = {
-            Hash("fe794a69eacd63b21245bf4eda826222fc6c5862bebf77aa05459cb308cfd063"),
-            Hash("c58c149eec59bb14b0c102a0f303d4c20366926b5c3206555d2937474124beb9"),
-            Hash("f3554b666038baffa5814c319d3053ee2c2eb30d31d0ef509a1a463386b69845"),
-    };
-    map<Hash, ItemType > subNodes;
-    vector<tuple<string, Hash, Hash>> subLinks;
-    auto links = linkReader(sourceLinkName.string());
-    auto nodes = nodeReader(sourceNodeName.string());
-    Graph graph;
-    graph.insert(links, nodes);
-    auto subGraphVec = graph.divideSubGraphByDepth(centers, 5);
-    tie(subNodes, subLinks) = getSubGraph(nodes, links, subGraphVec);
-    cout << "node size = " << subNodes.size() << endl;
-    {// output csv and echarts json
-        Graph subGraph;
-        subGraph.insert(subLinks, subNodes);
-        ofstream f;
-        int maxNodes = 800;
-        string fileName = name + ".json";
-        f.open(outputPath / fileName, ios::out);
-        if (!f.good()) {
-            cerr << "open file error!" << endl;
-            DEBUG;
-            exit(1);
-        }
-        auto group1Vec = subGraph.divideSubGraphByCenters(centers, maxNodes, [](uint32_t edgeWeight,bool hasBlack,uint32_t depth)->int{
-            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
-        });
-        auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
-        outputGraph(group1Nodes, group1Links, tuple<string, string>(
-                (outputPath / (name + "-Node.csv")).string(),
-                (outputPath / (name + "-Link.csv")).string()
-        ));
-        f << graphToJson_echarts(group1Links, group1Nodes, set<Hash>(centers.cbegin(), centers.cend()));
-        f.close();
-    }
-    {
-        Graph finalGraph2;
-        {
-            auto nodes = nodeReader((outputPath / (name+"-Node.csv")).string());
-            auto links = linkReader((outputPath / (name+"-Link.csv")).string());
-            finalGraph2.insert(links, nodes);
-        }
-        auto degreeStatistics = finalGraph2.getStatistics(vector<Hash>(centers.cbegin(), centers.cend()));
-        ofstream f;
-        f.open(outputAPIPath/(name+"-lxd.json"), ios::out);
-        f << graphToJson_lxd(degreeStatistics);
-        f.close();
-    }
-}
-void finalGroup1(){
-    string name = __FUNCTION__;
-    Hash h1 = Hash("421753e1f9d50442ad058315e2ab1ba76104ebc39764039f788257df5dc643d4");
-    map<Hash, ItemType > subNodes;
-    vector<tuple<string, Hash, Hash>> subLinks;
-    auto links = linkReader(sourceLinkName.string());
-    auto nodes = nodeReader(sourceNodeName.string());
-    Graph graph;
-    graph.insert(links, nodes);
-    auto subGraphVec = graph.divideSubGraphByDepth(vector<Hash>{h1}, 5);
-    tie(subNodes, subLinks) = getSubGraph(nodes, links, subGraphVec);
-    cout << "node size = " << subNodes.size() << endl;
-    {
-        Graph subGraph;
-        subGraph.insert(subLinks, subNodes);
-        ofstream f;
-        uint32_t maxNodes = 400;
-        string fileName = name + ".json";
-        f.open(outputPath / fileName, ios::out);
-        if (!f.good()) {
-            cerr << "open file error!" << endl;
-            DEBUG;
-            exit(1);
-        }
-        auto group1Vec = subGraph.divideSubGraphByCenters(vector<Hash>{h1}, maxNodes,[](uint32_t edgeWeight,bool hasBlack,uint32_t depth)->int{
-            return -(int)edgeWeight - 10 * hasBlack + 25*(int)depth;
-        });
-        auto [group1Nodes, group1Links] = getSubGraph(subNodes, subLinks, group1Vec);
-        outputGraph(group1Nodes, group1Links, tuple<string, string>(
-                (outputPath / (name + "-Node.csv")).string(),
-                (outputPath / (name + "-Link.csv")).string()
-        ));
-        f << graphToJson_echarts(group1Links, group1Nodes, set<Hash>{h1});
-        f.close();
-    }
-    {
-        Graph finalGraph1;
-        {
-            auto nodes = nodeReader((outputPath / (name+"-Node.csv")).string());
-            auto links = linkReader((outputPath / (name+"-Link.csv")).string());
-            finalGraph1.insert(links, nodes);
-        }
-        auto degreeStatistics = finalGraph1.getStatistics(vector<Hash>{h1});
-        ofstream f;
-        f.open(outputAPIPath/(name+"-lxd.json"), ios::out);
-        f << graphToJson_lxd(degreeStatistics);
-        f.close();
-    }
-}
+
 void myGroup1(bool buildFromScratch){
     // ftc 2022 05 29 18:00
     string name = __FUNCTION__;
@@ -177,7 +76,15 @@ void myGroup1(bool buildFromScratch){
         auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
         path = Graph::concatPath(path, pathi);
     }
-
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
+    }
     {
         // cwd json
         ofstream f;
@@ -282,6 +189,15 @@ void myGroup2(bool buildFromScratch){
     for(size_t i=0; i<pathByHand.size()-1; i++){
         auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
         path = Graph::concatPath(path, pathi);
+    }
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
     }
     {
         // cwd json
@@ -396,6 +312,15 @@ void myGroup3(bool buildFromScratch){
             auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
             path = Graph::concatPath(path, pathi);
         }
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
+    }
     {
         // cwd json
         ofstream f;
@@ -499,6 +424,15 @@ void myGroup4(bool buildFromScratch){
             auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
             path = Graph::concatPath(path, pathi);
         }
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
+    }
     {
         // cwd json
         ofstream f;
@@ -606,6 +540,15 @@ void myGroup5(bool buildFromScratch){
             path = Graph::concatPath(path, pathi);
         }
     DEBUG
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
+    }
     if(!pathByHand.empty())
     {
         // cwd json
@@ -884,6 +827,15 @@ void myGroup7(bool buildFromScratch){
             auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
             path = Graph::concatPath(path, pathi);
         }
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
+    }
     if(!pathByHand.empty())
     {
         // cwd json
@@ -995,6 +947,15 @@ void myGroup8(bool buildFromScratch){
             auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
             path = Graph::concatPath(path, pathi);
         }
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
+    }
     DEBUG
     if(!pathByHand.empty())
     {
@@ -1105,6 +1066,15 @@ void myGroup9(bool buildFromScratch){
             auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
             path = Graph::concatPath(path, pathi);
         }
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
+    }
     DEBUG
     if(!pathByHand.empty())
     {
@@ -1215,6 +1185,16 @@ void myGroup10(bool buildFromScratch){
             auto pathi = group1Graph.getShortestPathBetween(pathByHand[i], pathByHand[i+1]);
             path = Graph::concatPath(path, pathi);
         }
+    {// output path
+        ofstream f;
+        f.open((outputPath/(name+"-Path.csv")).string(), ios::out);
+        for(const Hash& h:path){
+            f << h.str << endl;
+        }
+        f.close();
+        return;
+    }
+
     DEBUG
     if(!pathByHand.empty())
     {
@@ -1256,10 +1236,16 @@ void myGroup10(bool buildFromScratch){
 }
 int main(){
     initPath();
-//    myGroup1(0);
-//    myGroup2(0);
-//    myGroup3(0);
+    myGroup1(0);
+    myGroup2(0);
+    myGroup3(0);
+    myGroup4(0);
     myGroup5(0);
+    myGroup7(0);
+    myGroup8(0);
+    myGroup9(0);
+    myGroup10(0);
+
 //    auto outputStatistics = [](const array<uint32_t, 8>& statistic)->string{
 //        return string("count: ") + to_string(statistic[0])+
 //        string(", Domain: ") + to_string(statistic[1])+
